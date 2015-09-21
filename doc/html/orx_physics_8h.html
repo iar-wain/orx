@@ -132,6 +132,10 @@ Data Structures</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structorx_b_o_d_y___p_a_r_t___d_e_f.html">orxBODY_PART_DEF</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structorx_p_a_r_t_i_c_l_e_g_r_o_u_p___d_e_f.html">orxPARTICLEGROUP_DEF</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structorx_p_a_r_t_i_c_l_e_g_r_o_u_p___s_h_a_p_e___d_e_f.html">orxPARTICLEGROUP_SHAPE_DEF</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structorx_p_h_y_s_i_c_s___e_v_e_n_t___p_a_y_l_o_a_d.html">orxPHYSICS_EVENT_PAYLOAD</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -189,8 +193,14 @@ Macros</h2></td></tr>
 <tr class="separator:ga47d1b602332628dc4df0093372c8920e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae0b3bb70bd51b17e317ed207c97b3fd5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gae0b3bb70bd51b17e317ed207c97b3fd5">orxBODY_PART_DEF_KU32_FLAG_BOX</a>&#160;&#160;&#160;0x00000002</td></tr>
 <tr class="separator:gae0b3bb70bd51b17e317ed207c97b3fd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga442cd7b69383e89f188fc610f9ae3199"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga442cd7b69383e89f188fc610f9ae3199">orxBODY_PART_DEF_KU32_FLAG_CHAIN</a>&#160;&#160;&#160;0x00000010</td></tr>
+<tr class="separator:ga442cd7b69383e89f188fc610f9ae3199"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1c45abbe93483824e32e7fb890b30d40"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga1c45abbe93483824e32e7fb890b30d40">orxBODY_PART_DEF_KU32_FLAG_EDGE</a>&#160;&#160;&#160;0x00000008</td></tr>
+<tr class="separator:ga1c45abbe93483824e32e7fb890b30d40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gafb8e21452ef1ce7bb2a789154f296ac1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gafb8e21452ef1ce7bb2a789154f296ac1">orxBODY_PART_DEF_KU32_FLAG_MESH</a>&#160;&#160;&#160;0x00000004</td></tr>
 <tr class="separator:gafb8e21452ef1ce7bb2a789154f296ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0f32d74e8881ce5048c01fb38b5a9c86"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga0f32d74e8881ce5048c01fb38b5a9c86">orxBODY_PART_DEF_KU32_FLAG_NONE</a>&#160;&#160;&#160;0x00000000</td></tr>
+<tr class="separator:ga0f32d74e8881ce5048c01fb38b5a9c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0f32d74e8881ce5048c01fb38b5a9c86"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga0f32d74e8881ce5048c01fb38b5a9c86">orxBODY_PART_DEF_KU32_FLAG_NONE</a>&#160;&#160;&#160;0x00000000</td></tr>
 <tr class="separator:ga0f32d74e8881ce5048c01fb38b5a9c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae0fef0071722effaae7df57b1dc98b6f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gae0fef0071722effaae7df57b1dc98b6f">orxBODY_PART_DEF_KU32_FLAG_SOLID</a>&#160;&#160;&#160;0x10000000</td></tr>
@@ -199,26 +209,70 @@ Macros</h2></td></tr>
 <tr class="separator:gadcd7a3a7310b14ef8e3e695f2f5e547e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabebb7ab1d353627fd016914456185556"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gabebb7ab1d353627fd016914456185556">orxBODY_PART_DEF_KU32_MASK_ALL</a>&#160;&#160;&#160;0xFFFFFFFF</td></tr>
 <tr class="separator:gabebb7ab1d353627fd016914456185556"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga07763d9e13c23a7c6ce4897203ba9c4f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga07763d9e13c23a7c6ce4897203ba9c4f">orxBODY_PART_DEF_KU32_MASK_TYPE</a>&#160;&#160;&#160;0x00000007</td></tr>
+<tr class="memitem:gabebb7ab1d353627fd016914456185556"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gabebb7ab1d353627fd016914456185556">orxBODY_PART_DEF_KU32_MASK_ALL</a>&#160;&#160;&#160;0xFFFFFFFF</td></tr>
+<tr class="separator:gabebb7ab1d353627fd016914456185556"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga07763d9e13c23a7c6ce4897203ba9c4f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga07763d9e13c23a7c6ce4897203ba9c4f">orxBODY_PART_DEF_KU32_MASK_TYPE</a>&#160;&#160;&#160;0x0000001F</td></tr>
 <tr class="separator:ga07763d9e13c23a7c6ce4897203ba9c4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1fe0927f5638cc9841754941e82a8521"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga1fe0927f5638cc9841754941e82a8521">orxBODY_PART_DEF_KU32_MESH_VERTEX_NUMBER</a>&#160;&#160;&#160;8</td></tr>
 <tr class="separator:ga1fe0927f5638cc9841754941e82a8521"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad78cf447389675df7501aa27c659945e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gad78cf447389675df7501aa27c659945e">orxPARTICLEGROUP_DEF_KU32_FLAG_2D</a>&#160;&#160;&#160;0x00000001</td></tr>
+<tr class="separator:gad78cf447389675df7501aa27c659945e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga74e626ee80cf899c099f2d9be3d36380"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga74e626ee80cf899c099f2d9be3d36380">orxPARTICLEGROUP_DEF_KU32_FLAG_CAN_BE_EMPTY</a>&#160;&#160;&#160;0x00000008</td></tr>
+<tr class="separator:ga74e626ee80cf899c099f2d9be3d36380"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8c877c1bbb3f5e870560f310db2f0e96"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga8c877c1bbb3f5e870560f310db2f0e96">orxPARTICLEGROUP_DEF_KU32_FLAG_NONE</a>&#160;&#160;&#160;0x00000000</td></tr>
+<tr class="separator:ga8c877c1bbb3f5e870560f310db2f0e96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga11445a5ce1e45b56f69c64f814778664"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga11445a5ce1e45b56f69c64f814778664">orxPARTICLEGROUP_DEF_KU32_FLAG_RIGID</a>&#160;&#160;&#160;0x00000004</td></tr>
+<tr class="separator:ga11445a5ce1e45b56f69c64f814778664"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga496f5b1ea74982e36aea2dd99593f063"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga496f5b1ea74982e36aea2dd99593f063">orxPARTICLEGROUP_DEF_KU32_FLAG_SOLID</a>&#160;&#160;&#160;0x00000002</td></tr>
+<tr class="separator:ga496f5b1ea74982e36aea2dd99593f063"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1a032490397b29bd957f8f49b020a2e6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga1a032490397b29bd957f8f49b020a2e6">orxPARTICLEGROUP_DEF_KU32_MASK_ALL</a>&#160;&#160;&#160;0xFFFFFFFF</td></tr>
+<tr class="separator:ga1a032490397b29bd957f8f49b020a2e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6d3230e5121db4731ed4ff65ceb2dc11"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga6d3230e5121db4731ed4ff65ceb2dc11">orxPARTICLEGROUP_SHAPE_DEF_KU32_FLAG_BOX</a>&#160;&#160;&#160;0x00000002</td></tr>
+<tr class="separator:ga6d3230e5121db4731ed4ff65ceb2dc11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4ced00ba2b4f50fcb4521064d10f72f5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga4ced00ba2b4f50fcb4521064d10f72f5">orxPARTICLEGROUP_SHAPE_DEF_KU32_FLAG_MESH</a>&#160;&#160;&#160;0x00000004</td></tr>
+<tr class="separator:ga4ced00ba2b4f50fcb4521064d10f72f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga27c2a9a88224d6aceb0e3ae5ebafd4d9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga27c2a9a88224d6aceb0e3ae5ebafd4d9">orxPARTICLEGROUP_SHAPE_DEF_KU32_FLAG_SPHERE</a>&#160;&#160;&#160;0x00000001</td></tr>
+<tr class="separator:ga27c2a9a88224d6aceb0e3ae5ebafd4d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4f1ac868f2f6ea05c053bc299bf78b17"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga4f1ac868f2f6ea05c053bc299bf78b17">orxPHYSICS_KU32_PARTICLE_SYSTEM_HASHTABLE_SIZE</a>&#160;&#160;&#160;5</td></tr>
+<tr class="separator:ga4f1ac868f2f6ea05c053bc299bf78b17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad1e001b92fcbc967b723f38522755a2c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gad1e001b92fcbc967b723f38522755a2c">orxPHYSICS_KZ_CONFIG_ALLOW_SLEEP</a>&#160;&#160;&#160;&quot;AllowSleep&quot;</td></tr>
 <tr class="separator:gad1e001b92fcbc967b723f38522755a2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga85bbe0663025bfbacca86e7ff7ecea27"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga85bbe0663025bfbacca86e7ff7ecea27">orxPHYSICS_KZ_CONFIG_COLLISION_FLAG_LIST</a>&#160;&#160;&#160;&quot;CollisionFlagList&quot;</td></tr>
 <tr class="separator:ga85bbe0663025bfbacca86e7ff7ecea27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga208b833bf382bc5b8f091741e7519ad9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga208b833bf382bc5b8f091741e7519ad9">orxPHYSICS_KZ_CONFIG_DAMPING_STRENGTH</a>&#160;&#160;&#160;&quot;DampingStrength&quot;</td></tr>
+<tr class="separator:ga208b833bf382bc5b8f091741e7519ad9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga569473aedd94913a6edbd5b1ab23a300"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga569473aedd94913a6edbd5b1ab23a300">orxPHYSICS_KZ_CONFIG_DENSITY</a>&#160;&#160;&#160;&quot;Density&quot;</td></tr>
+<tr class="separator:ga569473aedd94913a6edbd5b1ab23a300"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96df469effe5572877a35aa8b0a11def"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga96df469effe5572877a35aa8b0a11def">orxPHYSICS_KZ_CONFIG_ELASTIC_STRENGTH</a>&#160;&#160;&#160;&quot;ElasticStrength&quot;</td></tr>
+<tr class="separator:ga96df469effe5572877a35aa8b0a11def"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa699b48c19b3d565c2c5a571dc6174d5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gaa699b48c19b3d565c2c5a571dc6174d5">orxPHYSICS_KZ_CONFIG_GRAVITY</a>&#160;&#160;&#160;&quot;Gravity&quot;</td></tr>
 <tr class="separator:gaa699b48c19b3d565c2c5a571dc6174d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga91e0f82d6c9777df166739daef038902"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga91e0f82d6c9777df166739daef038902">orxPHYSICS_KZ_CONFIG_INTERPOLATE</a>&#160;&#160;&#160;&quot;Interpolate&quot;</td></tr>
+<tr class="separator:ga91e0f82d6c9777df166739daef038902"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6c3bba1b183c34d360ed7f7885cbeeaf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga6c3bba1b183c34d360ed7f7885cbeeaf">orxPHYSICS_KZ_CONFIG_ITERATIONS</a>&#160;&#160;&#160;&quot;IterationsPerStep&quot;</td></tr>
 <tr class="separator:ga6c3bba1b183c34d360ed7f7885cbeeaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga57616886e6b5482b3256646c5f5ccf1a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga57616886e6b5482b3256646c5f5ccf1a">orxPHYSICS_KZ_CONFIG_MAX_PARTICLE_COUNT</a>&#160;&#160;&#160;&quot;MaxParticleCount&quot;</td></tr>
+<tr class="separator:ga57616886e6b5482b3256646c5f5ccf1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga80a6ecada5ce8e79d23073ac4b9a7bea"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga80a6ecada5ce8e79d23073ac4b9a7bea">orxPHYSICS_KZ_CONFIG_PARTICLE_ITERATIONS</a>&#160;&#160;&#160;&quot;ParticleIterationsPerStep&quot;</td></tr>
+<tr class="separator:ga80a6ecada5ce8e79d23073ac4b9a7bea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf350409d3fbd4b72b66ae2960aa8f2e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gaf350409d3fbd4b72b66ae2960aa8f2e0">orxPHYSICS_KZ_CONFIG_PARTICLE_SYSTEM_LIST</a>&#160;&#160;&#160;&quot;ParticleSystemList&quot;</td></tr>
+<tr class="separator:gaf350409d3fbd4b72b66ae2960aa8f2e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga54245fef95d963702beb05cd9cda4023"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga54245fef95d963702beb05cd9cda4023">orxPHYSICS_KZ_CONFIG_PRESSURE_STRENGTH</a>&#160;&#160;&#160;&quot;PressureStrength&quot;</td></tr>
+<tr class="separator:ga54245fef95d963702beb05cd9cda4023"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6e9e0c2189e8939a120555c90350328c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga6e9e0c2189e8939a120555c90350328c">orxPHYSICS_KZ_CONFIG_RADIUS</a>&#160;&#160;&#160;&quot;Radius&quot;</td></tr>
+<tr class="separator:ga6e9e0c2189e8939a120555c90350328c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gacc85fccf6ee1b34191c2eacec867cfbe"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gacc85fccf6ee1b34191c2eacec867cfbe">orxPHYSICS_KZ_CONFIG_RATIO</a>&#160;&#160;&#160;&quot;DimensionRatio&quot;</td></tr>
 <tr class="separator:gacc85fccf6ee1b34191c2eacec867cfbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga719bed4c6c8c040776938aaf7ac02025"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga719bed4c6c8c040776938aaf7ac02025">orxPHYSICS_KZ_CONFIG_SECTION</a>&#160;&#160;&#160;&quot;Physics&quot;</td></tr>
 <tr class="separator:ga719bed4c6c8c040776938aaf7ac02025"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5ec60d173dab642eca67ebb9ccd23786"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga5ec60d173dab642eca67ebb9ccd23786">orxPHYSICS_KZ_CONFIG_SHOW_DEBUG</a>&#160;&#160;&#160;&quot;ShowDebug&quot;</td></tr>
 <tr class="separator:ga5ec60d173dab642eca67ebb9ccd23786"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9f91e1345abaa7a30bad359e997257d0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga9f91e1345abaa7a30bad359e997257d0">orxPHYSICS_KZ_CONFIG_SPRING_STRENGTH</a>&#160;&#160;&#160;&quot;SpringStrength&quot;</td></tr>
+<tr class="separator:ga9f91e1345abaa7a30bad359e997257d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gacea7fc3ee7d17978817421253f43b8f5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gacea7fc3ee7d17978817421253f43b8f5">orxPHYSICS_KZ_CONFIG_STEP_FREQUENCY</a>&#160;&#160;&#160;&quot;StepFrequency&quot;</td></tr>
 <tr class="separator:gacea7fc3ee7d17978817421253f43b8f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga40462a4d34ec1fa5a410ca8ab1b46aca"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga40462a4d34ec1fa5a410ca8ab1b46aca">orxPHYSICS_KZ_CONFIG_VISCOUS_STRENGTH</a>&#160;&#160;&#160;&quot;ViscousStrength&quot;</td></tr>
+<tr class="separator:ga40462a4d34ec1fa5a410ca8ab1b46aca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -230,6 +284,9 @@ __orxPHYSICS_BODY_JOINT_t&#160;</td><td class="memItemRight" valign="bottom"><a 
 <tr class="memitem:gad6ca00ed200d20d87023b977ea980526"><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak"/>
 __orxPHYSICS_BODY_PART_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gad6ca00ed200d20d87023b977ea980526">orxPHYSICS_BODY_PART</a></td></tr>
 <tr class="separator:gad6ca00ed200d20d87023b977ea980526"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga097210be54c7d5bb8d628aa8b0cdabd5"><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak"/>
+__orxPHYSICS_PARTICLEGROUP_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga097210be54c7d5bb8d628aa8b0cdabd5">orxPHYSICS_PARTICLEGROUP</a></td></tr>
+<tr class="separator:ga097210be54c7d5bb8d628aa8b0cdabd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -258,6 +315,10 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa805a13727288158b0cf409586890a80"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__orx_decl.html#gae6527efdaa8c25ec0ea370a9acb1c2ba">orxDLLAPI</a> <a class="el" href="group__orx_physics.html#gad6ca00ed200d20d87023b977ea980526">orxPHYSICS_BODY_PART</a> <br class="typebreak"/>
 *orxFASTCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#gaa805a13727288158b0cf409586890a80">orxPhysics_CreatePart</a> (<a class="el" href="group__orx_physics.html#ga4d95f1a2c67d8af72bd48522bd47aea6">orxPHYSICS_BODY</a> *_pstBody, const orxHANDLE _hUserData, const <a class="el" href="structorx_b_o_d_y___p_a_r_t___d_e_f.html">orxBODY_PART_DEF</a> *_pstBodyPartDef)</td></tr>
 <tr class="separator:gaa805a13727288158b0cf409586890a80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2a540a527e5dd33a738ca7254ddba67c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__orx_decl.html#gae6527efdaa8c25ec0ea370a9acb1c2ba">orxDLLAPI</a> <br class="typebreak"/>
+<a class="el" href="group__orx_physics.html#ga097210be54c7d5bb8d628aa8b0cdabd5">orxPHYSICS_PARTICLEGROUP</a> <br class="typebreak"/>
+*orxFASTCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga2a540a527e5dd33a738ca7254ddba67c">orxPhysics_CreateParticleGroup</a> (const orxHANDLE _hUserData, const <a class="el" href="structorx_p_a_r_t_i_c_l_e_g_r_o_u_p___d_e_f.html">orxPARTICLEGROUP_DEF</a> *_pstParticleGroupDef)</td></tr>
+<tr class="separator:ga2a540a527e5dd33a738ca7254ddba67c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9a93c444bc72743d34ca363f2f608da6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__orx_decl.html#gae6527efdaa8c25ec0ea370a9acb1c2ba">orxDLLAPI</a> <a class="el" href="group__orx_module.html#ga83fece8538c577b8a4a0801ee4573a86">void</a> orxFASTCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga9a93c444bc72743d34ca363f2f608da6">orxPhysics_DeleteBody</a> (<a class="el" href="group__orx_physics.html#ga4d95f1a2c67d8af72bd48522bd47aea6">orxPHYSICS_BODY</a> *_pstBody)</td></tr>
 <tr class="separator:ga9a93c444bc72743d34ca363f2f608da6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2526bf7244db3cc947ae8fc8ca47f70a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__orx_decl.html#gae6527efdaa8c25ec0ea370a9acb1c2ba">orxDLLAPI</a> <a class="el" href="group__orx_module.html#ga83fece8538c577b8a4a0801ee4573a86">void</a> orxFASTCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__orx_physics.html#ga2526bf7244db3cc947ae8fc8ca47f70a">orxPhysics_DeleteJoint</a> (<a class="el" href="group__orx_physics.html#gac0c9d300ee61b05b28a86313af67d137">orxPHYSICS_BODY_JOINT</a> *_pstBodyJoint)</td></tr>
@@ -347,7 +408,7 @@ orxFASTCALL&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section date"><dt>Date</dt><dd>24/03/2008 </dd></dl>
 <dl class="section author"><dt>Author</dt><dd><a href="#" onclick="location.href='mai'+'lto:'+'iar'+'wa'+'in@'+'or'+'x-p'+'ro'+'jec'+'t.'+'org'; return false;">iarwa<span style="display: none;">.nosp@m.</span>in@o<span style="display: none;">.nosp@m.</span>rx-pr<span style="display: none;">.nosp@m.</span>ojec<span style="display: none;">.nosp@m.</span>t.org</a></dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000048">Todo:</a></b></dt><dd></dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000049">Todo:</a></b></dt><dd></dd></dl>
 
 <p>Definition in file <a class="el" href="orx_physics_8h_source.html">orxPhysics.h</a>.</p>
 </div></div><!-- contents -->
