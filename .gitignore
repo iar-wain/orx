@@ -1,0 +1,13 @@
+*.so
+*.pyc
+*.cih
+*.log
+*.dylib
+**/build/mac/
+**/build/premake4
+cache/
+extern/
+code/lib/dynamic/
+.ycm_extra_conf.py
+code/bin/orxd
+code/bin/orx

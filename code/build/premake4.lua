@@ -612,3 +612,58 @@ project "Bounce"
         links {"imporxp"}
     configuration {"windows", "*Core*", "*Release*"}
         links {"imporx"}
+
+--
+-- Project: spud
+--
+
+project "spud"
+
+    files {"../plugins/Spud/spud.c"}
+
+    targetdir ("../bin/plugins/spud")
+
+    if _OPTIONS["split-platforms"] then
+        configuration {"x32"}
+            targetdir ("../bin/plugins/spud/x32")
+
+        configuration {"x64"}
+            targetdir ("../bin/plugins/spud/x64")
+
+        configuration {}
+    end
+
+    targetprefix ("")
+
+    kind ("SharedLib")
+
+    links
+    {
+        "orxLIB"
+    }
+
+    configuration {"not xcode*"}
+        links {"orx"}
+
+
+-- Linux
+
+
+-- Mac OS X
+
+    configuration {"macosx"}
+        targetextension (".so")
+        linkoptions {"-single_module"}
+
+
+-- Windows
+
+    configuration {"windows", "*Core*"}
+        libdirs {"../lib/static"}
+
+    configuration {"windows", "*Core*", "*Debug*"}
+        links {"imporxd"}
+    configuration {"windows", "*Core*", "*Profile*"}
+        links {"imporxp"}
+    configuration {"windows", "*Core*", "*Release*"}
+        links {"imporx"}
