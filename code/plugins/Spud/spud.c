@@ -7,6 +7,10 @@ const char* kevin = "watters";
 
 orxOBJECT* hero;
 orxOBJECT* herosGun;
+orxOBJECT* scoreObj;
+orxOBJECT* scene;
+
+orxS16 score = 0;
 
 static orxVECTOR leftSpeed = {-20, 0, 0};
 static orxVECTOR rightSpeed = {20, 0, 0};
@@ -16,15 +20,28 @@ static orxVECTOR flipLeft = { -2, 2, 1 };
 static orxVECTOR flipRight = { 2, 2, 1 };
 
 static void create_explosion(orxOBJECT* object, orxSTRING exploderName) {
-  if (!object)
-    return;
+  if (object) {
+    orxVECTOR pos;
+    orxObject_GetWorldPosition(object, &pos);
+    orxObject_SetPosition(orxObject_CreateFromConfig(exploderName), &pos);
+  }
+}
 
-  orxVECTOR pos;
-  orxObject_GetWorldPosition(object, &pos);
-  pos.fZ = 0.0;
+static void update_score(int increase) {
+    score += increase;
+ 
+    orxCHAR formattedScore[6];
+    orxString_Print(formattedScore, "%d", score);
+ 
+    orxObject_SetTextString(scoreObj, formattedScore);
+}
 
-  orxOBJECT* explosion = orxObject_CreateFromConfig(exploderName);
-  orxObject_SetPosition(explosion, &pos);
+static void explode_player(orxOBJECT* player, orxOBJECT* monster) {
+  create_explosion(player, "JellyExploder");
+  orxObject_SetLifeTime(player, 0);
+  orxObject_Enable(player, false);
+  orxObject_AddTimeLineTrack(scene, "PopUpGameOverTrack");
+  hero = orxNULL;
 }
 
 
@@ -46,11 +63,21 @@ static orxSTATUS orxFASTCALL spud_physics(const orxEVENT* e) {
       create_explosion(receiver, "JellyExploder");
       orxObject_SetLifeTime(sender, 0);
       orxObject_SetLifeTime(receiver, 0);
+      update_score(250);
     }
     if (orxString_Compare(receiverName, "BulletObject") == 0) {
       create_explosion(sender, "JellyExploder");
       orxObject_SetLifeTime(sender, 0);
       orxObject_SetLifeTime(receiver, 0);
+      update_score(250);
+    }
+    if (orxString_Compare(receiverName, "HeroObject") == 0 &&
+        orxString_Compare(senderName, "MonsterObject") == 0) {
+      explode_player(receiver, sender);
+    }
+    if (orxString_Compare(senderName, "HeroObject") == 0 &&
+        orxString_Compare(receiverName, "MonsterObject") == 0) {
+      explode_player(sender, receiver);
     }
   }
 
@@ -62,23 +89,26 @@ static void orxFASTCALL spud_update(const orxCLOCK_INFO* clockInfo, void* contex
     orxEvent_SendShort(orxEVENT_TYPE_SYSTEM, orxSYSTEM_EVENT_CLOSE);
   }
 
-  if (orxInput_IsActive("GoLeft")) {
-    orxObject_SetScale(hero, &flipLeft);
-    orxObject_ApplyImpulse(hero, &leftSpeed, orxNULL);
-    orxObject_SetTargetAnim(hero, "HeroRun");
-  } else if (orxInput_IsActive("GoRight")) {
-    orxObject_SetScale(hero, &flipRight);
-    orxObject_ApplyImpulse(hero, &rightSpeed, orxNULL);
-    orxObject_SetTargetAnim(hero, "HeroRun");
-  } else {
-    orxObject_SetTargetAnim(hero, orxNULL);
+  if (hero) {
+    if (orxInput_IsActive("GoLeft")) {
+      orxObject_SetScale(hero, &flipLeft);
+      orxObject_ApplyImpulse(hero, &leftSpeed, orxNULL);
+      orxObject_SetTargetAnim(hero, "HeroRun");
+    } else if (orxInput_IsActive("GoRight")) {
+      orxObject_SetScale(hero, &flipRight);
+      orxObject_ApplyImpulse(hero, &rightSpeed, orxNULL);
+      orxObject_SetTargetAnim(hero, "HeroRun");
+    } else {
+      orxObject_SetTargetAnim(hero, orxNULL);
+    }
+
+    if (orxInput_IsActive("Jump") && orxInput_HasNewStatus("Jump")) {
+      orxObject_ApplyImpulse(hero, &jumpSpeed, orxNULL);
+    }
+
+    orxObject_Enable(herosGun, orxInput_IsActive("Shoot"));
   }
 
-  orxObject_Enable(herosGun, orxInput_IsActive("Shoot"));
-
-  if (orxInput_IsActive("Jump") && orxInput_HasNewStatus("Jump")) {
-    orxObject_ApplyImpulse(hero, &jumpSpeed, orxNULL);
-  }
 }
 
 static orxSTATUS spud_init() {
@@ -98,8 +128,8 @@ static orxSTATUS spud_init() {
 
   orxObject_Enable(herosGun, false);
 
-  orxObject_CreateFromConfig("Scene");
-
+  scene = orxObject_CreateFromConfig("Scene");
+  scoreObj = orxObject_CreateFromConfig("ScoreObject");
   orxEvent_AddHandler(orxEVENT_TYPE_PHYSICS, spud_physics);
 
   // register an update clock
