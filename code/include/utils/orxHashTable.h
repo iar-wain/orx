@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -91,6 +91,13 @@ extern orxDLLAPI orxU32 orxFASTCALL             orxHashTable_GetCounter(const or
  * @return The Element associated to the key or orxNULL if not found.
  */
 extern orxDLLAPI void *orxFASTCALL              orxHashTable_Get(const orxHASHTABLE *_pstHashTable, orxU64 _u64Key);
+
+/** Retrieves the bucket of an item in a hash table, if the item wasn't present, a new bucket will be created.
+ * @param[in] _pstHashTable   Concerned hashtable
+ * @param[in] _u64Key         Key to find
+ * @return The bucket associated to the given key if success, orxNULL otherwise
+ */
+extern orxDLLAPI void **orxFASTCALL             orxHashTable_Retrieve(orxHASHTABLE *_pstHashTable, orxU64 _u64Key);
 
 /** Set an item value.
  * @param[in] _pstHashTable The hash table where set.

@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -468,11 +468,16 @@ static orxINLINE orxSTATUS orx_LogAllStructures()
         /* Is owner-less? */
         if(orxStructure_GetOwner(pstStructure) == orxNULL)
         {
-          /* Not already logged? */
-          if(orxHashTable_Get(pstTable, orxStructure_GetGUID(pstStructure)) == orxNULL)
+          orxSTRUCTURE **ppstBucket;
+
+          /* Retrieves hashtable bucket */
+          ppstBucket = (orxSTRUCTURE **)orxHashTable_Retrieve(pstTable, orxStructure_GetGUID(pstStructure));
+
+          /* Valid and not already logged? */
+          if((ppstBucket != orxNULL) && (*ppstBucket == orxNULL))
           {
             /* Adds it to table */
-            orxHashTable_Set(pstTable, orxStructure_GetGUID(pstStructure), pstStructure);
+            *ppstBucket = pstStructure;
 
             /* Logs it */
             if(sastStructureInfoList[i].pfnGetName != orxNULL)

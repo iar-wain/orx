@@ -40,7 +40,8 @@ end
 
 function initplatforms ()
     if os.is ("windows") then
-        if string.lower(_ACTION) == "vs2013" then
+        if string.lower(_ACTION) == "vs2013"
+        or string.lower(_ACTION) == "vs2015" then
             return
             {
                 "x64",
@@ -87,7 +88,7 @@ function defaultaction (name, action)
    end
 end
 
-defaultaction ("windows", "vs2013")
+defaultaction ("windows", "vs2015")
 defaultaction ("linux", "gmake")
 defaultaction ("macosx", "gmake")
 
@@ -133,16 +134,18 @@ solution "Tutorial"
     includedirs
     {
         "../include",
-        "../../code/include"
+        "../../code/include",
+        "$(ORX)/include"
     }
 
-    configuration{"not macosx"}
-        libdirs{"../lib"}
-    configuration{}
+    configuration {"not macosx"}
+        libdirs {"../lib"}
+    configuration {}
 
     libdirs
     {
-        "../../code/lib/dynamic"
+        "../../code/lib/dynamic",
+        "$(ORX)/lib/dynamic"
     }
 
     targetdir ("../bin")
@@ -161,7 +164,7 @@ solution "Tutorial"
         "StaticRuntime"
     }
 
-    configuration {"not vs2013"}
+    configuration {"not vs2013", "not vs2015"}
         flags {"EnableSSE2"}
 
     configuration {"not x64"}
@@ -242,19 +245,22 @@ project "01_Object"
 -- Linux
 
     configuration {"linux"}
-        postbuildcommands {"$(shell [ -f " .. copybase .. "/../code/lib/dynamic/liborx.so ] && cp -f " .. copybase .. "/../code/lib/dynamic/liborx*.so " .. copybase .. "/bin)"}
+        postbuildcommands {"$(shell cp -f " .. copybase .. "/../code/lib/dynamic/liborx*.so " .. copybase .. "/bin)"}
 
 
 -- Mac OS X
 
-    configuration {"macosx"}
-        postbuildcommands {"$(shell [ -f " .. copybase .. "/../code/lib/dynamic/liborx.dylib ] && cp -f " .. copybase .. "/../code/lib/dynamic/liborx*.dylib " .. copybase .. "/bin)"}
+    configuration {"macosx", "xcode*"}
+        postbuildcommands {"$(cp -f " .. copybase .. "/../code/lib/dynamic/liborx*.dylib " .. copybase .. "/bin)"}
+
+    configuration {"macosx", "not xcode*"}
+        postbuildcommands {"$(shell cp -f " .. copybase .. "/../code/lib/dynamic/liborx*.dylib " .. copybase .. "/bin)"}
 
 
 -- Windows
 
     configuration {"windows"}
-        postbuildcommands {"cmd /c if exist " .. path.translate(copybase, "\\") .. "\\..\\code\\lib\\dynamic\\orx.dll copy /Y " .. path.translate(copybase, "\\") .. "\\..\\code\\lib\\dynamic\\orx*.dll " .. path.translate(copybase, "\\") .. "\\bin"}
+        postbuildcommands {"cmd /c copy /Y " .. path.translate(copybase, "\\") .. "\\..\\code\\lib\\dynamic\\orx*.dll " .. path.translate(copybase, "\\") .. "\\bin"}
 
 
 --

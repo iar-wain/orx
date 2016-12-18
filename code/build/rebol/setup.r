@@ -19,7 +19,7 @@ hg-hook:        "update.orx"
 git:            %.git/
 git-hooks:      [%post-checkout %post-merge]
 platform-data:  [
-    "windows"   ['premake "windows" 'config ["gmake" "codelite" "vs2012" "vs2013"]                                                                           ]
+    "windows"   ['premake "windows" 'config ["gmake" "codelite" "vs2012" "vs2013" "vs2015"]                                                                 ]
     "mac"       ['premake "mac"     'config ["gmake" "codelite" "xcode4"         ]                                                                          ]
     "linux"     ['premake "linux32" 'config ["gmake" "codelite"                  ] 'deps ["freeglut3-dev" "libsndfile1-dev" "libopenal-dev" "libxrandr-dev"]]
 ]
@@ -29,7 +29,10 @@ platform-data:  [
 begin: now/time
 skip-hook: false
 platform: lowercase to-string system/platform/1
-if platform = "macintosh" [platform: "mac"]
+switch platform [
+    "macintosh" [platform: "mac"]
+    "linux"     [if find to-string system/platform/2 "x64" [platform-data/:platform/premake: "linux64"]]
+]
 platform-info: platform-data/:platform
 
 change-dir system/options/home
@@ -59,6 +62,7 @@ cur-ver: either exists? cur-file [
 ] [
     none
 ]
+print ["== Checking version: [" extern "]"]
 either req-ver = cur-ver [
     print ["== [" cur-ver "] already installed, skipping!"]
 ] [
@@ -94,8 +98,8 @@ either req-ver = cur-ver [
 
 
     ; Decompresses
-    do system/script/path/rebzip.r
     attempt [delete-dir temp]
+    do system/script/path/rebzip.r
     print ["== Decompressing [" local "] => [" extern "]"]
     wait 0.5
     unzip/quiet temp local

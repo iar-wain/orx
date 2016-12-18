@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -41,6 +41,16 @@
 #include "debug/orxProfiler.h"
 #include "memory/orxMemory.h"
 
+#ifdef __orxWINDOWS__
+
+  #include <malloc.h>
+
+#else /* __orxWINDOWS__ */
+
+  #include <alloca.h>
+
+#endif /* __orxWINDOWS__ */
+
 
 /** Body flags
  */
@@ -70,7 +80,6 @@
 #define orxBODY_KZ_CONFIG_CUSTOM_GRAVITY      "CustomGravity"
 #define orxBODY_KZ_CONFIG_FIXED_ROTATION      "FixedRotation"
 #define orxBODY_KZ_CONFIG_ALLOW_SLEEP         "AllowSleep"
-#define orxBODY_KZ_CONFIG_ALLOW_GROUND_SLIDING "AllowGroundSliding"
 #define orxBODY_KZ_CONFIG_ALLOW_MOVING        "AllowMoving"
 #define orxBODY_KZ_CONFIG_HIGH_SPEED          "HighSpeed"
 #define orxBODY_KZ_CONFIG_DYNAMIC             "Dynamic"
@@ -87,6 +96,13 @@
 #define orxBODY_KZ_CONFIG_CENTER              "Center"
 #define orxBODY_KZ_CONFIG_RADIUS              "Radius"
 #define orxBODY_KZ_CONFIG_VERTEX_LIST         "VertexList"
+#define orxBODY_KZ_CONFIG_PREVIOUS_VERTEX     "PreviousVertex"
+#define orxBODY_KZ_CONFIG_NEXT_VERTEX         "NextVertex"
+#define orxBODY_KZ_CONFIG_LOOP                "Loop"
+#define orxBODY_KZ_CONFIG_VERTEX_0            "Vertex0"
+#define orxBODY_KZ_CONFIG_VERTEX_1            "Vertex1"
+#define orxBODY_KZ_CONFIG_VERTEX_2            "Vertex2"
+#define orxBODY_KZ_CONFIG_VERTEX_3            "Vertex3"
 #define orxBODY_KZ_CONFIG_PARENT_ANCHOR       "ParentAnchor"
 #define orxBODY_KZ_CONFIG_CHILD_ANCHOR        "ChildAnchor"
 #define orxBODY_KZ_CONFIG_COLLIDE             "Collide"
@@ -119,6 +135,8 @@
 #define orxBODY_KZ_TYPE_SPHERE                "sphere"
 #define orxBODY_KZ_TYPE_BOX                   "box"
 #define orxBODY_KZ_TYPE_MESH                  "mesh"
+#define orxBODY_KZ_TYPE_EDGE                  "edge"
+#define orxBODY_KZ_TYPE_CHAIN                 "chain"
 #define orxBODY_KZ_TYPE_REVOLUTE              "revolute"
 #define orxBODY_KZ_TYPE_PRISMATIC             "prismatic"
 #define orxBODY_KZ_TYPE_SPRING                "spring"
@@ -504,10 +522,6 @@ orxBODY *orxFASTCALL orxBody_CreateFromConfig(const orxSTRUCTURE *_pstOwner, con
     {
       stBodyDef.u32Flags |= orxBODY_DEF_KU32_FLAG_ALLOW_SLEEP;
     }
-    if((orxConfig_HasValue(orxBODY_KZ_CONFIG_ALLOW_GROUND_SLIDING) == orxFALSE) || (orxConfig_GetBool(orxBODY_KZ_CONFIG_ALLOW_GROUND_SLIDING) != orxFALSE))
-    {
-      stBodyDef.u32Flags |= orxBODY_DEF_KU32_FLAG_CAN_SLIDE;
-    }
     if((orxConfig_HasValue(orxBODY_KZ_CONFIG_ALLOW_MOVING) == orxFALSE) || (orxConfig_GetBool(orxBODY_KZ_CONFIG_ALLOW_MOVING) != orxFALSE))
     {
       stBodyDef.u32Flags |= orxBODY_DEF_KU32_FLAG_CAN_MOVE;
@@ -567,9 +581,6 @@ orxBODY *orxFASTCALL orxBody_CreateFromConfig(const orxSTRUCTURE *_pstOwner, con
 
       /* Stores its reference key */
       pstResult->zReference = orxConfig_GetCurrentSection();
-
-      /* Protects it */
-      orxConfig_ProtectSection(pstResult->zReference, orxTRUE);
     }
 
     /* Pops previous section */
@@ -640,13 +651,6 @@ orxSTATUS orxFASTCALL orxBody_Delete(orxBODY *_pstBody)
     {
       /* Deletes physics body */
       orxPhysics_DeleteBody(_pstBody->pstData);
-    }
-
-    /* Has reference? */
-    if(_pstBody->zReference != orxNULL)
-    {
-      /* Unprotects it */
-      orxConfig_ProtectSection(_pstBody->zReference, orxFALSE);
     }
 
     /* Deletes structure */
@@ -779,6 +783,24 @@ orxBODY_PART *orxFASTCALL orxBody_AddPart(orxBODY *_pstBody, const orxBODY_PART_
 
       /* Copies def */
       orxMemory_Copy(pstLocalBodyPartDef, _pstBodyPartDef, sizeof(orxBODY_PART_DEF));
+
+      /* Chain? */
+      if(_pstBodyPartDef->u32Flags & orxBODY_PART_DEF_KU32_FLAG_CHAIN)
+      {
+        orxU32 u32Size;
+
+        /* Gets vertex buffer size */
+        u32Size = _pstBodyPartDef->stChain.u32VertexCounter * sizeof(orxVECTOR);
+
+        /* Allocates vertex list */
+        pstLocalBodyPartDef->stChain.avVertices = (orxVECTOR *)orxMemory_Allocate(u32Size, orxMEMORY_TYPE_PHYSICS);
+
+        /* Checks */
+        orxASSERT(pstLocalBodyPartDef->stChain.avVertices != orxNULL);
+
+        /* Copies vertices */
+        orxMemory_Copy(pstLocalBodyPartDef->stChain.avVertices, _pstBodyPartDef->stChain.avVertices, u32Size);
+      }
 
       /* Stores def */
       pstResult->pstDef = pstLocalBodyPartDef;
@@ -956,6 +978,103 @@ orxBODY_PART *orxFASTCALL orxBody_AddPartFromConfig(orxBODY *_pstBody, const orx
         bSuccess = orxFALSE;
       }
     }
+    /* Edge */
+    else if(orxString_ICompare(zBodyPartType, orxBODY_KZ_TYPE_EDGE) == 0)
+    {
+      /* Updates edge specific info */
+      stBodyPartDef.u32Flags |= orxBODY_PART_DEF_KU32_FLAG_EDGE;
+      if((orxConfig_HasValue(orxBODY_KZ_CONFIG_VERTEX_1) != orxFALSE)
+      && (orxConfig_HasValue(orxBODY_KZ_CONFIG_VERTEX_2) != orxFALSE))
+      {
+        /* Gets them */
+        orxConfig_GetVector(orxBODY_KZ_CONFIG_VERTEX_1, &(stBodyPartDef.stEdge.v1));
+        orxConfig_GetVector(orxBODY_KZ_CONFIG_VERTEX_2, &(stBodyPartDef.stEdge.v2));
+
+        /* Has vertex0? */
+        if((stBodyPartDef.stEdge.bHasVertex0 = orxConfig_HasValue(orxBODY_KZ_CONFIG_VERTEX_0)) != orxFALSE)
+        {
+          /* Gets it */
+          orxConfig_GetVector(orxBODY_KZ_CONFIG_VERTEX_0, &(stBodyPartDef.stEdge.v0));
+        }
+
+        /* Has vertex3? */
+        if((stBodyPartDef.stEdge.bHasVertex3 = orxConfig_HasValue(orxBODY_KZ_CONFIG_VERTEX_3)) != orxFALSE)
+        {
+          /* Gets it */
+          orxConfig_GetVector(orxBODY_KZ_CONFIG_VERTEX_3, &(stBodyPartDef.stEdge.v3));
+        }
+      }
+      else
+      {
+        /* Logs message */
+        orxDEBUG_PRINT(orxDEBUG_LEVEL_PHYSICS, "Vertex1 and/or Vertex2 for creating edge body <%s> are missing.", _zConfigID);
+
+        /* Updates status */
+        bSuccess = orxFALSE;
+      }
+    }
+    /* Chain */
+    else if(orxString_ICompare(zBodyPartType, orxBODY_KZ_TYPE_CHAIN) == 0)
+    {
+      /* Updates chain specific info */
+      stBodyPartDef.u32Flags |= orxBODY_PART_DEF_KU32_FLAG_CHAIN;
+      if((orxConfig_HasValue(orxBODY_KZ_CONFIG_VERTEX_LIST) != orxFALSE)
+      && ((stBodyPartDef.stChain.u32VertexCounter = orxConfig_GetListCounter(orxBODY_KZ_CONFIG_VERTEX_LIST)) >= 2))
+      {
+        /* Allocates vertices */
+        stBodyPartDef.stChain.avVertices = (orxVECTOR *)alloca(stBodyPartDef.stChain.u32VertexCounter * sizeof(orxVECTOR));
+
+        /* Valid? */
+        if(stBodyPartDef.stChain.avVertices != orxNULL)
+        {
+          orxU32 i;
+
+          /* For all defined vertices */
+          for(i = 0; i < stBodyPartDef.stChain.u32VertexCounter; i++)
+          {
+            /* Gets its vector */
+            orxConfig_GetListVector(orxBODY_KZ_CONFIG_VERTEX_LIST, i, &(stBodyPartDef.stChain.avVertices[i]));
+          }
+
+          /* Gets loop status */
+          stBodyPartDef.stChain.bIsLoop = orxConfig_GetBool(orxBODY_KZ_CONFIG_LOOP);
+
+          /* Not a loop? */
+          if(stBodyPartDef.stChain.bIsLoop == orxFALSE)
+          {
+            /* Has previous vertex? */
+            if((stBodyPartDef.stChain.bHasPrevious = orxConfig_HasValue(orxBODY_KZ_CONFIG_PREVIOUS_VERTEX)) != orxFALSE)
+            {
+              /* Gets it */
+              orxConfig_GetVector(orxBODY_KZ_CONFIG_PREVIOUS_VERTEX, &(stBodyPartDef.stChain.vPrevious));
+            }
+
+            /* Has next vertex? */
+            if((stBodyPartDef.stChain.bHasNext = orxConfig_HasValue(orxBODY_KZ_CONFIG_NEXT_VERTEX)) != orxFALSE)
+            {
+              /* Gets it */
+              orxConfig_GetVector(orxBODY_KZ_CONFIG_NEXT_VERTEX, &(stBodyPartDef.stChain.vNext));
+            }
+          }
+        }
+        else
+        {
+          /* Logs message */
+          orxDEBUG_PRINT(orxDEBUG_LEVEL_PHYSICS, "Could not allocate vertex memory when creating chain body <%s>.", _zConfigID);
+
+          /* Updates status */
+          bSuccess = orxFALSE;
+        }
+      }
+      else
+      {
+        /* Logs message */
+        orxDEBUG_PRINT(orxDEBUG_LEVEL_PHYSICS, "Vertex list for creating chain body <%s> is invalid (missing or less than 2 vertices).", _zConfigID);
+
+        /* Updates status */
+        bSuccess = orxFALSE;
+      }
+    }
     /* Unknown */
     else
     {
@@ -977,9 +1096,6 @@ orxBODY_PART *orxFASTCALL orxBody_AddPartFromConfig(orxBODY *_pstBody, const orx
       {
         /* Stores its reference */
         pstResult->zReference = orxConfig_GetCurrentSection();
-
-        /* Protects it */
-        orxConfig_ProtectSection(pstResult->zReference, orxTRUE);
       }
     }
     else
@@ -1163,11 +1279,11 @@ orxSTATUS orxFASTCALL orxBody_RemovePart(orxBODY_PART *_pstBodyPart)
     /* Deletes its data */
     orxPhysics_DeletePart(_pstBodyPart->pstData);
 
-    /* Has reference? */
-    if(_pstBodyPart->zReference != orxNULL)
+    /* Is a chain part? */
+    if(_pstBodyPart->pstDef->u32Flags & orxBODY_PART_DEF_KU32_FLAG_CHAIN)
     {
-      /* Unprotects it */
-      orxConfig_ProtectSection(_pstBodyPart->zReference, orxFALSE);
+      /* Frees vertices */
+      orxMemory_Free(_pstBodyPart->pstDef->stChain.avVertices);
     }
 
     /* Frees part def */
@@ -1499,9 +1615,6 @@ orxBODY_JOINT *orxFASTCALL orxBody_AddJointFromConfig(orxBODY *_pstSrcBody, orxB
       {
         /* Stores its reference */
         pstResult->zReference = orxConfig_GetCurrentSection();
-
-        /* Protects it */
-        orxConfig_ProtectSection(pstResult->zReference, orxTRUE);
       }
     }
 
@@ -1617,13 +1730,6 @@ orxSTATUS orxFASTCALL orxBody_RemoveJoint(orxBODY_JOINT *_pstBodyJoint)
 
     /* Deletes its data */
     orxPhysics_DeleteJoint(_pstBodyJoint->pstData);
-
-    /* Has reference? */
-    if(_pstBodyJoint->zReference != orxNULL)
-    {
-      /* Unprotects it */
-      orxConfig_ProtectSection(_pstBodyJoint->zReference, orxFALSE);
-    }
 
     /* Frees joint */
     orxBank_Free(sstBody.pstJointBank, _pstBodyJoint);

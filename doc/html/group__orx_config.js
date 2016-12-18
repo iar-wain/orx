@@ -1,8 +1,8 @@
 var group__orx_config =
 [
     [ "orxCONFIG_KZ_RESOURCE_GROUP", "group__orx_config.html#ga292cacf010a38b185f65e2e54bce8733", null ],
-    [ "orxCONFIG_BOOTSTRAP_FUNCTION", "group__orx_config.html#gad2079c5205e7d0ef04e34a7a6db3331a", null ],
-    [ "orxCONFIG_SAVE_FUNCTION", "group__orx_config.html#ga7e6115a8a97bcce5c51485a75445d52a", null ],
+    [ "orxCONFIG_BOOTSTRAP_FUNCTION", "group__orx_config.html#gafb7b4d512a29c9410c5a5e1f7faf9119", null ],
+    [ "orxCONFIG_SAVE_FUNCTION", "group__orx_config.html#gaff09561378d9e18269c5313bc428ff18", null ],
     [ "orxCONFIG_EVENT", "group__orx_config.html#gad70a5ee64ac35b8fdd9cdaf3e4a1d267", [
       [ "orxCONFIG_EVENT_RELOAD_START", "group__orx_config.html#ggad70a5ee64ac35b8fdd9cdaf3e4a1d267ace45d5a2a874a2b0c4daf9744b323c5f", null ],
       [ "orxCONFIG_EVENT_RELOAD_STOP", "group__orx_config.html#ggad70a5ee64ac35b8fdd9cdaf3e4a1d267a9c3629004c01faf9a86b3eff33ce327c", null ],
@@ -10,6 +10,7 @@ var group__orx_config =
       [ "orxCONFIG_EVENT_NUMBER", "group__orx_config.html#ggad70a5ee64ac35b8fdd9cdaf3e4a1d267ad0606fb3b2c94f49ee8f7a502a6af6a5", null ],
       [ "orxCONFIG_EVENT_NONE", "group__orx_config.html#ggad70a5ee64ac35b8fdd9cdaf3e4a1d267ad9ae2558aad3b328688ae5fd9bf16230", null ]
     ] ],
+    [ "orxConfig_AppendListString", "group__orx_config.html#ga3f470edfb16ff8e0382327fa8352df61", null ],
     [ "orxConfig_Clear", "group__orx_config.html#ga7526b75f27415d1eff396fbaea6a3f97", null ],
     [ "orxConfig_ClearSection", "group__orx_config.html#ga0ef471810ad2d2ed9ff5e0726cacc545", null ],
     [ "orxConfig_ClearValue", "group__orx_config.html#gaa773c70b03b90b92246985029120c1eb", null ],
@@ -47,10 +48,13 @@ var group__orx_config =
     [ "orxConfig_HasSection", "group__orx_config.html#gad42bd0a8612fbe43d17a887f7149e4a0", null ],
     [ "orxConfig_HasValue", "group__orx_config.html#gad57211f9017325df09ecc0fd4414eef3", null ],
     [ "orxConfig_Init", "group__orx_config.html#ga5f188331baaf549aa47f31375cb79016", null ],
+    [ "orxConfig_IsDynamicValue", "group__orx_config.html#gad79e4e0dd3a92d0a9ffad2bc85af2c80", null ],
     [ "orxConfig_IsInheritedValue", "group__orx_config.html#ga365019394fbad0e1d52f88edf4da7ab5", null ],
     [ "orxConfig_IsList", "group__orx_config.html#gab7d1fdec8e820cd684cef7987cf73ba0", null ],
     [ "orxConfig_IsRandomValue", "group__orx_config.html#gaa0a1cc968946c9743e15dfe4adba66b7", null ],
     [ "orxConfig_Load", "group__orx_config.html#gaf36ad6ebff7b59ac6d6c03647786d174", null ],
+    [ "orxConfig_LoadFromMemory", "group__orx_config.html#ga75b35018162183cd8e353a4c92d581be", null ],
+    [ "orxConfig_MergeFiles", "group__orx_config.html#ga70e0248b816ed217ca0954e7f5c597e3", null ],
     [ "orxConfig_PopSection", "group__orx_config.html#ga9bfdc91a8ec4fafb71209bb87fafa60e", null ],
     [ "orxConfig_ProtectSection", "group__orx_config.html#gaf974a34a8848238975665df234042c0c", null ],
     [ "orxConfig_PushSection", "group__orx_config.html#gac1e65aaecdc7d8349ca76bee0d54f38d", null ],

@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -193,7 +193,7 @@ static orxINLINE orxU32               orxMath_GetTrailingZeroCount(orxU32 _u32Va
   };
 
   /* Done! */
-  return sau32DeBruijnLUT[((orxU32)(((orxS32)_u32Value & -(orxS32)_u32Value) * 0x077CB531U)) >> 27];
+  return sau32DeBruijnLUT[(((orxU32)((orxS32)_u32Value & -(orxS32)_u32Value)) * 0x077CB531U) >> 27];
 }
 
 /** Is value a power of two?

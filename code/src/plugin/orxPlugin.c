@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -683,7 +683,7 @@ void orxFASTCALL orxPlugin_AddCoreInfo(orxPLUGIN_CORE_ID _ePluginCoreID, orxMODU
   orxASSERT(sstPlugin.u32Flags & orxPLUGIN_KU32_STATIC_FLAG_READY);
   orxASSERT(sstPlugin.astCoreInfo[_ePluginCoreID].pstCoreFunctionTable == orxNULL);
   orxASSERT(_ePluginCoreID < orxPLUGIN_CORE_ID_NUMBER);
-  orxASSERT(_eModuleID < orxMODULE_ID_NUMBER);
+  orxASSERT(_eModuleID < orxMODULE_ID_CORE_NUMBER);
   orxASSERT(_astCoreFunction != orxNULL);
 
   /* Stores info */

@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -58,6 +58,8 @@
 #define orxSPAWNER_KU32_FLAG_ACTIVE_LIMIT         0x40000000  /**< Active limit flag */
 #define orxSPAWNER_KU32_FLAG_WAVE_MODE            0x80000000  /**< Wave mode flag */
 #define orxSPAWNER_KU32_FLAG_OBJECT_SPEED         0x01000000  /**< Speed flag */
+#define orxSPAWNER_KU32_FLAG_CLEAN_INTERPOLATE    0x02000000  /**< Clean interpolation flag */
+#define orxSPAWNER_KU32_FLAG_IMMEDIATE            0x04000000  /**< Immediate flag */
 
 #define orxSPAWNER_KU32_FLAG_RANDOM_OBJECT_SPEED  0x00100000  /**< Random object speed flag */
 #define orxSPAWNER_KU32_FLAG_RANDOM_WAVE_SIZE     0x00200000  /**< Random wave size flag */
@@ -88,6 +90,7 @@
 #define orxSPAWNER_KZ_CONFIG_USE_SELF_AS_PARENT   "UseSelfAsParent"
 #define orxSPAWNER_KZ_CONFIG_CLEAN_ON_DELETE      "CleanOnDelete"
 #define orxSPAWNER_KZ_CONFIG_INTERPOLATE          "Interpolate"
+#define orxSPAWNER_KZ_CONFIG_IMMEDIATE            "Immediate"
 
 #define orxSPAWNER_KU32_BANK_SIZE                 128         /**< Bank size */
 
@@ -213,7 +216,7 @@ static orxSTATUS orxFASTCALL orxSpawner_ProcessConfigData(orxSPAWNER *_pstSpawne
     orxSpawner_SetWaveSize(_pstSpawner, orxConfig_GetU32(orxSPAWNER_KZ_CONFIG_WAVE_SIZE));
 
     /* Has list/random value? */
-    if((orxConfig_GetListCounter(orxSPAWNER_KZ_CONFIG_WAVE_SIZE) > 1) || (orxConfig_IsRandomValue(orxSPAWNER_KZ_CONFIG_WAVE_SIZE) != orxFALSE))
+    if(orxConfig_IsDynamicValue(orxSPAWNER_KZ_CONFIG_WAVE_SIZE) != orxFALSE)
     {
       /* Updates status */
       orxStructure_SetFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_RANDOM_WAVE_SIZE, orxSPAWNER_KU32_FLAG_NONE);
@@ -223,7 +226,7 @@ static orxSTATUS orxFASTCALL orxSpawner_ProcessConfigData(orxSPAWNER *_pstSpawne
     orxSpawner_SetWaveDelay(_pstSpawner, orxConfig_GetFloat(orxSPAWNER_KZ_CONFIG_WAVE_DELAY));
 
     /* Has list/random value? */
-    if((orxConfig_GetListCounter(orxSPAWNER_KZ_CONFIG_WAVE_DELAY) > 1) || (orxConfig_IsRandomValue(orxSPAWNER_KZ_CONFIG_WAVE_DELAY) != orxFALSE))
+    if(orxConfig_IsDynamicValue(orxSPAWNER_KZ_CONFIG_WAVE_DELAY) != orxFALSE)
     {
       /* Updates status */
       orxStructure_SetFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_RANDOM_WAVE_DELAY, orxSPAWNER_KU32_FLAG_NONE);
@@ -288,7 +291,7 @@ static orxSTATUS orxFASTCALL orxSpawner_ProcessConfigData(orxSPAWNER *_pstSpawne
       }
 
       /* Has list/random value? */
-      if((orxConfig_GetListCounter(orxSPAWNER_KZ_CONFIG_OBJECT_SPEED) > 1) || (orxConfig_IsRandomValue(orxSPAWNER_KZ_CONFIG_OBJECT_SPEED) != orxFALSE))
+      if(orxConfig_IsDynamicValue(orxSPAWNER_KZ_CONFIG_OBJECT_SPEED) != orxFALSE)
       {
         /* Updates status */
         orxStructure_SetFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_RANDOM_OBJECT_SPEED, orxSPAWNER_KU32_FLAG_NONE);
@@ -335,15 +338,20 @@ static orxSTATUS orxFASTCALL orxSpawner_ProcessConfigData(orxSPAWNER *_pstSpawne
     }
 
     /* Should interpolate? */
-    if((orxConfig_HasValue(orxSPAWNER_KZ_CONFIG_INTERPOLATE) == orxFALSE) || (orxConfig_GetBool(orxSPAWNER_KZ_CONFIG_INTERPOLATE) != orxFALSE))
+    if((orxConfig_HasValue(orxSPAWNER_KZ_CONFIG_INTERPOLATE) != orxFALSE) && (orxConfig_GetBool(orxSPAWNER_KZ_CONFIG_INTERPOLATE) != orxFALSE))
     {
-      /* Stores last values */
-      orxSpawner_GetWorldPosition(_pstSpawner, &(_pstSpawner->vLastPosition));
-      orxSpawner_GetWorldScale(_pstSpawner, &(_pstSpawner->vLastScale));
-      _pstSpawner->fLastRotation  = orxSpawner_GetWorldRotation(_pstSpawner);
-
       /* Updates status */
-      orxStructure_SetFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_INTERPOLATE, orxSPAWNER_KU32_FLAG_NONE);
+      orxStructure_SetFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_INTERPOLATE | orxSPAWNER_KU32_FLAG_CLEAN_INTERPOLATE, orxSPAWNER_KU32_FLAG_NONE);
+    }
+
+    /* Is immediate? */
+    if((orxConfig_HasValue(orxSPAWNER_KZ_CONFIG_IMMEDIATE) != orxFALSE) && (orxConfig_GetBool(orxSPAWNER_KZ_CONFIG_IMMEDIATE) != orxFALSE))
+    {
+      /* Updates status */
+      orxStructure_SetFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_IMMEDIATE, orxSPAWNER_KU32_FLAG_NONE);
+
+      /* Updates timer */
+      _pstSpawner->fWaveTimer = orxFLOAT_0;
     }
 
     /* Updates result */
@@ -558,8 +566,12 @@ orxU32 orxFASTCALL orxSpawner_SpawnInternal(orxSPAWNER *_pstSpawner, orxU32 _u32
             orxObject_Update(pstObject, &stClockInfo);
           }
 
-          /* Sends event */
-          orxEVENT_SEND(orxEVENT_TYPE_SPAWNER, orxSPAWNER_EVENT_SPAWN, _pstSpawner, pstObject, orxNULL);
+          /* Still alive? */
+          if(((orxSTRUCTURE *)pstObject)->u64GUID != orxSTRUCTURE_GUID_MAGIC_TAG_DELETED)
+          {
+            /* Sends event */
+            orxEVENT_SEND(orxEVENT_TYPE_SPAWNER, orxSPAWNER_EVENT_SPAWN, _pstSpawner, pstObject, orxNULL);
+          }
         }
       }
 
@@ -648,6 +660,28 @@ static orxSTATUS orxFASTCALL orxSpawner_EventHandler(const orxEVENT *_pstEvent)
             pstSpawner->u32ActiveObjectCounter--;
 
             break;
+          }
+
+          break;
+        }
+
+        case orxOBJECT_EVENT_ENABLE:
+        case orxOBJECT_EVENT_DISABLE:
+        {
+          orxOBJECT  *pstObject;
+          orxSPAWNER *pstSpawner;
+
+          /* Gets corresponding object */
+          pstObject = orxOBJECT(_pstEvent->hSender);
+
+          /* Gets its spawner */
+          pstSpawner = orxOBJECT_GET_STRUCTURE(pstObject, SPAWNER);
+
+          /* Found? */
+          if(pstSpawner != orxNULL)
+          {
+            /* Disables it */
+            orxSpawner_Enable(pstSpawner, (_pstEvent->eID == orxOBJECT_EVENT_ENABLE) ? orxTRUE : orxFALSE);
           }
 
           break;
@@ -864,8 +898,8 @@ static orxSTATUS orxFASTCALL orxSpawner_Update(orxSTRUCTURE *_pstStructure, cons
         /* Adds event handler */
         orxEvent_AddHandler(orxEVENT_TYPE_SPAWNER, orxSpawner_EventHandler);
 
-        /* Is in interpolate mode with a valid wave delay? */
-        if(orxStructure_TestFlags(pstSpawner, orxSPAWNER_KU32_FLAG_INTERPOLATE)
+        /* Is in active interpolate mode with a valid wave delay? */
+        if((orxStructure_GetFlags(pstSpawner, orxSPAWNER_KU32_FLAG_INTERPOLATE | orxSPAWNER_KU32_FLAG_CLEAN_INTERPOLATE) == orxSPAWNER_KU32_FLAG_INTERPOLATE)
         && (pstSpawner->fWaveDelay > orxFLOAT_0))
         {
           orxVECTOR vSpawnerPosition, vSpawnerScale, vPosition, vScale;
@@ -900,8 +934,19 @@ static orxSTATUS orxFASTCALL orxSpawner_Update(orxSTRUCTURE *_pstStructure, cons
         }
         else
         {
+          /* Should clean interpolation values? */
+          if(orxStructure_TestFlags(pstSpawner, orxSPAWNER_KU32_FLAG_CLEAN_INTERPOLATE))
+          {
+            /* Stores last values */
+            orxSpawner_GetWorldPosition(pstSpawner, &(pstSpawner->vLastPosition));
+            orxSpawner_GetWorldScale(pstSpawner, &(pstSpawner->vLastScale));
+            pstSpawner->fLastRotation  = orxSpawner_GetWorldRotation(pstSpawner);
+
+            /* Updates status */
+            orxStructure_SetFlags(pstSpawner, orxSPAWNER_KU32_FLAG_NONE, orxSPAWNER_KU32_FLAG_CLEAN_INTERPOLATE);
+          }
           /* Is in interpolate mode? */
-          if(orxStructure_TestFlags(pstSpawner, orxSPAWNER_KU32_FLAG_INTERPOLATE))
+          else if(orxStructure_TestFlags(pstSpawner, orxSPAWNER_KU32_FLAG_INTERPOLATE))
           {
             /* Logs message */
             orxDEBUG_PRINT(orxDEBUG_LEVEL_OBJECT, "Spawner <%s>: Ignoring interpolate mode as its WaveDelay isn't strictly positive.", orxSpawner_GetName(pstSpawner));
@@ -1202,7 +1247,7 @@ orxSTATUS orxFASTCALL orxSpawner_Delete(orxSPAWNER *_pstSpawner)
  * @param[in]   _pstSpawner     Concerned spawner
  * @param[in]   _bEnable      Enable / disable
  */
-void orxFASTCALL    orxSpawner_Enable(orxSPAWNER *_pstSpawner, orxBOOL _bEnable)
+void orxFASTCALL orxSpawner_Enable(orxSPAWNER *_pstSpawner, orxBOOL _bEnable)
 {
   /* Checks */
   orxASSERT(sstSpawner.u32Flags & orxSPAWNER_KU32_STATIC_FLAG_READY);
@@ -1214,10 +1259,8 @@ void orxFASTCALL    orxSpawner_Enable(orxSPAWNER *_pstSpawner, orxBOOL _bEnable)
     /* Is in interpolate mode and wasn't enabled? */
     if(orxStructure_GetFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_INTERPOLATE | orxSPAWNER_KU32_FLAG_ENABLED) == orxSPAWNER_KU32_FLAG_INTERPOLATE)
     {
-      /* Stores last values */
-      orxSpawner_GetWorldPosition(_pstSpawner, &(_pstSpawner->vLastPosition));
-      orxSpawner_GetWorldScale(_pstSpawner, &(_pstSpawner->vLastScale));
-      _pstSpawner->fLastRotation  = orxSpawner_GetWorldRotation(_pstSpawner);
+      /* Asks for interpolation clean */
+      orxStructure_SetFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_CLEAN_INTERPOLATE, orxSPAWNER_KU32_FLAG_NONE);
     }
 
     /* Updates status flags */
@@ -1225,8 +1268,17 @@ void orxFASTCALL    orxSpawner_Enable(orxSPAWNER *_pstSpawner, orxBOOL _bEnable)
   }
   else
   {
-    /* Updates status flags */
-    orxStructure_SetFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_NONE, orxSPAWNER_KU32_FLAG_ENABLED);
+    /* Auto reset? */
+    if(orxStructure_TestFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_AUTO_RESET))
+    {
+      /* Resets spawner */
+      orxSpawner_Reset(_pstSpawner);
+    }
+    else
+    {
+      /* Updates status flags */
+      orxStructure_SetFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_NONE, orxSPAWNER_KU32_FLAG_ENABLED);
+    }
   }
 
   return;
@@ -1246,7 +1298,7 @@ orxBOOL orxFASTCALL orxSpawner_IsEnabled(const orxSPAWNER *_pstSpawner)
   return(orxStructure_TestFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_ENABLED));
 }
 
-/** Resets (and re-enables) a spawner
+/** Resets (and disables) a spawner
  * @param[in]   _pstSpawner     Concerned spawner
  */
 void orxFASTCALL orxSpawner_Reset(orxSPAWNER *_pstSpawner)
@@ -1266,7 +1318,7 @@ void orxFASTCALL orxSpawner_Reset(orxSPAWNER *_pstSpawner)
   /* Resets counters */
   _pstSpawner->u32ActiveObjectCounter = 0;
   _pstSpawner->u32TotalObjectCounter  = 0;
-  _pstSpawner->fWaveTimer             = orxFLOAT_0;
+  _pstSpawner->fWaveTimer             = orxStructure_TestFlags(_pstSpawner, orxSPAWNER_KU32_FLAG_IMMEDIATE) ? orxFLOAT_0 : _pstSpawner->fWaveDelay;
 
   /* For all objects */
   for(pstObject = orxOBJECT(orxStructure_GetFirst(orxSTRUCTURE_ID_OBJECT));

@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -105,6 +105,11 @@ extern orxDLLAPI orxTIMELINE *orxFASTCALL       orxTimeLine_Create();
  * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
  */
 extern orxDLLAPI orxSTATUS orxFASTCALL          orxTimeLine_Delete(orxTIMELINE *_pstTimeLine);
+
+/** Clears cache (if any TimeLine track is still in active use, it'll remain in memory until not referenced anymore)
+ * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
+ */
+extern orxDLLAPI orxSTATUS orxFASTCALL          orxTimeLine_ClearCache();
 
 /** Enables/disables a TimeLine
  * @param[in]   _pstTimeLine          Concerned TimeLine

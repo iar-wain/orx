@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -192,6 +192,7 @@ typedef struct __orxCOLOR_t
 #define orxDISPLAY_KZ_CONFIG_VSYNC          "VSync"
 #define orxDISPLAY_KZ_CONFIG_DEPTHBUFFER    "DepthBuffer"
 #define orxDISPLAY_KZ_CONFIG_SHADER_VERSION "ShaderVersion"
+#define orxDISPLAY_KZ_CONFIG_SHADER_EXTENSION_LIST "ShaderExtensionList"
 
 
 /** Shader texture suffixes
@@ -200,6 +201,12 @@ typedef struct __orxCOLOR_t
 #define orxDISPLAY_KZ_SHADER_SUFFIX_LEFT    "_left"
 #define orxDISPLAY_KZ_SHADER_SUFFIX_BOTTOM  "_bottom"
 #define orxDISPLAY_KZ_SHADER_SUFFIX_RIGHT   "_right"
+
+
+/** Shader extension actions
+ */
+#define orxDISPLAY_KC_SHADER_EXTENSION_ADD  '+'
+#define orxDISPLAY_KC_SHADER_EXTENSION_REMOVE '-'
 
 
 /** Event enum
@@ -1049,12 +1056,13 @@ extern orxDLLAPI orxSTATUS orxFASTCALL                orxDisplay_DrawMesh(const 
 extern orxDLLAPI orxBOOL orxFASTCALL                  orxDisplay_HasShaderSupport();
 
 /** Creates (compiles) a shader
- * @param[in]   _zCode                                Shader code to compile
+ * @param[in]   _azCodeList                           List of shader code to compile, in order
+ * @param[in]   _u32Size                              Size of the shader code list
  * @param[in]   _pstParamList                         Shader parameters (should be a link list of orxSHADER_PARAM)
  * @param[in]   _bUseCustomParam                      Shader uses custom parameters
  * @return orxHANDLE of the compiled shader is successful, orxHANDLE_UNDEFINED otherwise
  */
-extern orxDLLAPI orxHANDLE orxFASTCALL                orxDisplay_CreateShader(const orxSTRING _zCode, const orxLINKLIST *_pstParamList, orxBOOL _bUseCustomParam);
+extern orxDLLAPI orxHANDLE orxFASTCALL                orxDisplay_CreateShader(const orxSTRING *_azCodeList, orxU32 _u32Size, const orxLINKLIST *_pstParamList, orxBOOL _bUseCustomParam);
 
 /** Deletes a compiled shader
  * @param[in]   _hShader                              Shader to delete

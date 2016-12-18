@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -59,11 +59,12 @@
 #define orxVIEWPORT_KU32_FLAG_ALIGN_RIGHT     0x20000000  /**< Right horizontal alignment */
 #define orxVIEWPORT_KU32_FLAG_ALIGN_TOP       0x40000000  /**< Top vertical alignment */
 #define orxVIEWPORT_KU32_FLAG_ALIGN_BOTTOM    0x80000000  /**< Bottom vertical alignment */
+#define orxVIEWPORT_KU32_FLAG_NO_DEBUG        0x01000000  /**< No debug flag */
 
 
 /** Misc defined
  */
-#define orxVIEWPORT_KU32_MAX_TEXTURE_NUMBER   16
+#define orxVIEWPORT_KU32_MAX_TEXTURE_NUMBER   8
 
 
 /** Internal Viewport structure */

@@ -43,7 +43,8 @@ end
 
 function initplatforms ()
     if os.is ("windows") then
-        if string.lower(_ACTION) == "vs2013" then
+        if string.lower(_ACTION) == "vs2013"
+        or string.lower(_ACTION) == "vs2015" then
             return
             {
                 "x64",
@@ -90,7 +91,7 @@ function defaultaction (name, action)
    end
 end
 
-defaultaction ("windows", "vs2013")
+defaultaction ("windows", "vs2015")
 defaultaction ("linux", "gmake")
 defaultaction ("macosx", "gmake")
 
@@ -142,7 +143,7 @@ solution "orx"
         "../include",
         "../../extern/dlmalloc",
         "../../extern/glfw-2.7/include",
-        "../../extern/Box2D_2.1.3/include",
+        "../../extern/LiquidFun-1.1.0/include",
         "../../extern/stb_image",
         "../../extern/openal-soft/include",
         "../../extern/libsndfile-1.0.22/include",
@@ -170,7 +171,7 @@ solution "orx"
         "StaticRuntime"
     }
 
-    configuration {"not vs2013"}
+    configuration {"not vs2013", "not vs2015"}
         flags {"EnableSSE2"}
 
     configuration {"not x64"}
@@ -199,7 +200,7 @@ solution "orx"
         {
             "../../extern/glfw-2.7/lib/linux",
             "../../extern/libsndfile-1.0.22/lib/linux",
-            "../../extern/Box2D_2.1.3/lib/linux",
+            "../../extern/LiquidFun-1.1.0/lib/linux",
             "../../extern/libwebp/lib/linux"
         }
         buildoptions
@@ -212,7 +213,7 @@ solution "orx"
         {
             "../../extern/glfw-2.7/lib/linux64",
             "../../extern/libsndfile-1.0.22/lib/linux64",
-            "../../extern/Box2D_2.1.3/lib/linux64",
+            "../../extern/LiquidFun-1.1.0/lib/linux64",
             "../../extern/libwebp/lib/linux64"
         }
         buildoptions
@@ -228,7 +229,7 @@ solution "orx"
         {
             "../../extern/glfw-2.7/lib/mac",
             "../../extern/libsndfile-1.0.22/lib/mac",
-            "../../extern/Box2D_2.1.3/lib/mac",
+            "../../extern/LiquidFun-1.1.0/lib/mac",
             "../../extern/libwebp/lib/mac"
         }
         buildoptions
@@ -252,31 +253,13 @@ solution "orx"
 
 -- Windows
 
-    configuration {"vs2008"}
-        libdirs
-        {
-            "../../extern/glfw-2.7/lib/vc2008",
-            "../../extern/openal-soft/lib/vc2008",
-            "../../extern/libsndfile-1.0.22/lib/vc2008",
-            "../../extern/Box2D_2.1.3/lib/msvs2008"
-        }
-
-    configuration {"vs2010"}
-        libdirs
-        {
-            "../../extern/glfw-2.7/lib/vc2010",
-            "../../extern/openal-soft/lib/vc2010",
-            "../../extern/libsndfile-1.0.22/lib/vc2010",
-            "../../extern/Box2D_2.1.3/lib/msvs2010"
-        }
-
     configuration {"vs2012"}
         libdirs
         {
             "../../extern/glfw-2.7/lib/vc2012",
             "../../extern/openal-soft/lib/vc2012",
             "../../extern/libsndfile-1.0.22/lib/vc2012",
-            "../../extern/Box2D_2.1.3/lib/msvs2012",
+            "../../extern/LiquidFun-1.1.0/lib/vc2012",
             "../../extern/libwebp/lib/vc2012"
         }
 
@@ -286,7 +269,7 @@ solution "orx"
             "../../extern/glfw-2.7/lib/vc2013/32",
             "../../extern/openal-soft/lib/vc2013/32",
             "../../extern/libsndfile-1.0.22/lib/vc2013/32",
-            "../../extern/Box2D_2.1.3/lib/msvs2013/32",
+            "../../extern/LiquidFun-1.1.0/lib/vc2013/32",
             "../../extern/libwebp/lib/vc2013/32"
         }
 
@@ -296,8 +279,28 @@ solution "orx"
             "../../extern/glfw-2.7/lib/vc2013/64",
             "../../extern/openal-soft/lib/vc2013/64",
             "../../extern/libsndfile-1.0.22/lib/vc2013/64",
-            "../../extern/Box2D_2.1.3/lib/msvs2013/64",
+            "../../extern/LiquidFun-1.1.0/lib/vc2013/64",
             "../../extern/libwebp/lib/vc2013/64"
+        }
+
+    configuration {"vs2015", "x32"}
+        libdirs
+        {
+            "../../extern/glfw-2.7/lib/vc2015/32",
+            "../../extern/openal-soft/lib/vc2015/32",
+            "../../extern/libsndfile-1.0.22/lib/vc2015/32",
+            "../../extern/LiquidFun-1.1.0/lib/vc2015/32",
+            "../../extern/libwebp/lib/vc2015/32"
+        }
+
+    configuration {"vs2015", "x64"}
+        libdirs
+        {
+            "../../extern/glfw-2.7/lib/vc2015/64",
+            "../../extern/openal-soft/lib/vc2015/64",
+            "../../extern/libsndfile-1.0.22/lib/vc2015/64",
+            "../../extern/LiquidFun-1.1.0/lib/vc2015/64",
+            "../../extern/libwebp/lib/vc2015/64"
         }
 
     configuration {"windows", "codeblocks or codelite or gmake"}
@@ -306,7 +309,7 @@ solution "orx"
             "../../extern/glfw-2.7/lib/mingw",
             "../../extern/openal-soft/lib/mingw",
             "../../extern/libsndfile-1.0.22/lib/mingw",
-            "../../extern/Box2D_2.1.3/lib/mingw",
+            "../../extern/LiquidFun-1.1.0/lib/mingw",
             "../../extern/libwebp/lib/mingw"
         }
 
@@ -437,10 +440,10 @@ project "orxLIB"
         links {"webpdecoder"}
 
     configuration {"*Debug*"}
-        links {"Box2Dd"}
+        links {"liquidfund"}
 
     configuration {"not *Debug*"}
-        links {"Box2D"}
+        links {"liquidfun"}
 
 
 -- Linux
@@ -457,7 +460,8 @@ project "orxLIB"
             "dl",
             "m",
             "rt",
-            "pthread"
+            "pthread",
+            "gcc"
         }
         defines {"_GNU_SOURCE"}
 

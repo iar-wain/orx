@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -133,6 +133,15 @@ extern orxDLLAPI void orxFASTCALL                         orxMemory_Exit();
  * @return  returns a pointer on the memory allocated, or orxNULL if an error has occurred
  */
 extern orxDLLAPI void *orxFASTCALL                        orxMemory_Allocate(orxU32 _u32Size, orxMEMORY_TYPE _eMemType);
+
+/** Reallocates a previously allocated memory block, with the given new size and returns a pointer on it
+ * If possible, it'll keep the current pointer and extend the memory block, if not it'll allocate a new block,
+ * copy the data over and deallocates the original block
+ * @param[in]  _pMem      Memory block to reallocate
+ * @param[in]  _u32Size   Size of the memory to allocate
+ * @return  returns a pointer to the reallocated memory block or orxNULL if an error has occurred
+ */
+extern orxDLLAPI void *orxFASTCALL                        orxMemory_Reallocate(void *_pMem, orxU32 _u32Size);
 
 /** Frees a portion of memory allocated with orxMemory_Allocate
  * @param[in]  _pMem     Pointer on the memory allocated by orx

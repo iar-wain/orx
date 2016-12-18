@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -125,6 +125,13 @@ extern orxDLLAPI const orxSTRING orxFASTCALL  orxConfig_GetMainFileName();
  */
 extern orxDLLAPI orxSTATUS orxFASTCALL        orxConfig_Load(const orxSTRING _zFileName);
 
+/** Loads config data from a memory buffer. NB: the buffer will be modified during processing!
+ * @param[in] _acBuffer         Buffer to process, will be modified during processing
+ * @param[in] _u32BufferSize    Size of the buffer
+ * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
+ */
+extern orxDLLAPI orxSTATUS orxFASTCALL        orxConfig_LoadFromMemory(orxCHAR *_acBuffer, orxU32 _u32BufferSize);
+
 /** Reloads config files from history
  * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
  */
@@ -145,6 +152,15 @@ extern orxDLLAPI orxSTATUS orxFASTCALL        orxConfig_Save(const orxSTRING _zF
  * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
  */
 extern orxDLLAPI orxSTATUS orxFASTCALL        orxConfig_CopyFile(const orxSTRING _zDstFileName, const orxSTRING _zSrcFileName, const orxSTRING _zEncryptionKey);
+
+/** Merges multiple files into a single one, with optional encryption
+ * @param[in] _zDstFileName     Name of the destination file
+ * @param[in] _azSrcFileName    List of the names of the source files
+ * @param[in] _u32Number        Number of source file names
+ * @param[in] _zEncryptionKey   Encryption key to use when writing destination file, orxNULL for no encryption
+ * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
+ */
+extern orxDLLAPI orxSTATUS orxFASTCALL        orxConfig_MergeFiles(const orxSTRING _zDstFileName, const orxSTRING *_azSrcFileName, orxU32 _u32Number, const orxSTRING _zEncryptionKey);
 
 /** Selects current working section
  * @param[in] _zSectionName     Section name to select
@@ -180,7 +196,7 @@ extern orxDLLAPI orxSTATUS orxFASTCALL        orxConfig_SetParent(const orxSTRIN
 
 /** Gets a section's parent
  * @param[in] _zSectionName     Concerned section
- * @return Section's parent name / orxNULL
+ * @return Section's parent name if set or orxSTRING_EMPTY if no parent has been forced, orxNULL otherwise
  */
 extern orxDLLAPI const orxSTRING orxFASTCALL  orxConfig_GetParent(const orxSTRING _zSectionName);
 
@@ -259,6 +275,12 @@ extern orxDLLAPI orxBOOL orxFASTCALL          orxConfig_IsInheritedValue(const o
  * @return orxTRUE / orxFALSE
  */
 extern orxDLLAPI orxBOOL orxFASTCALL          orxConfig_IsRandomValue(const orxSTRING _zKey);
+
+/** Is this value dynamic? (ie. random and/or a list)
+ * @param[in] _zKey             Key name
+ * @return orxTRUE / orxFALSE
+ */
+extern orxDLLAPI orxBOOL orxFASTCALL          orxConfig_IsDynamicValue(const orxSTRING _zKey);
 
 /** Has specified value for the given key?
  * @param[in] _zKey             Key name
@@ -468,6 +490,14 @@ extern orxDLLAPI orxVECTOR *orxFASTCALL       orxConfig_GetListVector(const orxS
  * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
  */
 extern orxDLLAPI orxSTATUS orxFASTCALL        orxConfig_SetListString(const orxSTRING _zKey, const orxSTRING _azValue[], orxU32 _u32Number);
+
+/** Appends string values to a config list (will create a new entry if not already present)
+ * @param[in] _zKey             Key name
+ * @param[in] _azValue          Values
+ * @param[in] _u32Number        Number of values
+ * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
+ */
+extern orxDLLAPI orxSTATUS orxFASTCALL        orxConfig_AppendListString(const orxSTRING _zKey, const orxSTRING _azValue[], orxU32 _u32Number);
 
 /** Gets key counter of the current section
  * @return Key counter of the current section if valid, 0 otherwise

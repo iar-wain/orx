@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -51,7 +51,7 @@
 
 /** Defines
  */
-#define orxTEXTURE_KZ_SCREEN_NAME         "-=Screen=-"
+#define orxTEXTURE_KZ_SCREEN_NAME         "screen"
 
 #define orxTEXTURE_KZ_RESOURCE_GROUP      "Texture"
 
@@ -97,10 +97,11 @@ extern orxDLLAPI void orxFASTCALL         orxTexture_Exit();
 extern orxDLLAPI orxTEXTURE *orxFASTCALL  orxTexture_Create();
 
 /** Creates a texture from a bitmap file
- * @param[in]   _zBitmapFileName  Name of the bitmap
+ * @param[in]   _zFileName      Name of the bitmap
+ * @param[in]   _bKeepInCache   Should be kept in cache after no more references exist?
  * @return      orxTEXTURE / orxNULL
  */
-extern orxDLLAPI orxTEXTURE *orxFASTCALL  orxTexture_CreateFromFile(const orxSTRING _zBitmapFileName);
+extern orxDLLAPI orxTEXTURE *orxFASTCALL  orxTexture_CreateFromFile(const orxSTRING _zFileName, orxBOOL _bKeepInCache);
 
 /** Deletes a texture (and its referenced bitmap)
  * @param[in]   _pstTexture     Concerned texture
@@ -108,13 +109,19 @@ extern orxDLLAPI orxTEXTURE *orxFASTCALL  orxTexture_CreateFromFile(const orxSTR
  */
 extern orxDLLAPI orxSTATUS orxFASTCALL    orxTexture_Delete(orxTEXTURE *_pstTexture);
 
+/** Clears cache (if any texture is still in active use, it'll remain in memory until not referenced anymore)
+ * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
+ */
+extern orxDLLAPI orxSTATUS orxFASTCALL    orxTexture_ClearCache();
+
 /** Links a bitmap
  * @param[in]   _pstTexture     Concerned texture
  * @param[in]   _pstBitmap      Bitmap to link
  * @param[in]   _zDataName      Name associated with the bitmap (usually filename)
+ * @param[in]   _bTransferOwnership If set to true, the texture will become the bitmap's owner and will have it deleted upon its own deletion
  * @return      orxSTATUS_SUCCESS / orxSTATUS_FAILURE
  */
-extern orxDLLAPI orxSTATUS orxFASTCALL    orxTexture_LinkBitmap(orxTEXTURE *_pstTexture, const orxBITMAP *_pstBitmap, const orxSTRING _zDataName);
+extern orxDLLAPI orxSTATUS orxFASTCALL    orxTexture_LinkBitmap(orxTEXTURE *_pstTexture, const orxBITMAP *_pstBitmap, const orxSTRING _zDataName, orxBOOL _bTransferOwnership);
 
 /** Unlinks (and deletes if not used anymore) a bitmap
  * @param[in]   _pstTexture     Concerned texture

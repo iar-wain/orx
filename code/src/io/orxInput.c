@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -46,7 +46,7 @@
 
 #ifdef __orxMSVC__
 
-  #include "malloc.h"
+  #include <malloc.h>
 
 #endif /* __orxMSVC__ */
 
@@ -1258,6 +1258,11 @@ orxSTATUS orxFASTCALL orxInput_Load(const orxSTRING _zFileName)
   if((orxConfig_HasSection(orxINPUT_KZ_CONFIG_SECTION) != orxFALSE)
   && (orxConfig_PushSection(orxINPUT_KZ_CONFIG_SECTION) != orxSTATUS_FAILURE))
   {
+    orxINPUT_SET *pstPreviousSet;
+
+    /* Stores current set */
+    pstPreviousSet = sstInput.pstCurrentSet;
+
     /* Gets joystick threshold */
     sstInput.fJoystickAxisThreshold = (orxConfig_HasValue(orxINPUT_KZ_CONFIG_JOYSTICK_THRESHOLD) != orxFALSE) ? orxConfig_GetFloat(orxINPUT_KZ_CONFIG_JOYSTICK_THRESHOLD) : orxINPUT_KF_DEFAULT_JOYSTICK_THRESHOLD;
 
@@ -1289,6 +1294,13 @@ orxSTATUS orxFASTCALL orxInput_Load(const orxSTRING _zFileName)
           eResult = orxSTATUS_SUCCESS;
         }
       }
+    }
+
+    /* Should restore previous set? */
+    if(pstPreviousSet != orxNULL)
+    {
+      /* Restores it */
+      sstInput.pstCurrentSet = pstPreviousSet;
     }
 
     /* Pops previous section */
@@ -1509,6 +1521,11 @@ orxSTATUS orxFASTCALL orxInput_SelectSet(const orxSTRING _zSetName)
         orxEVENT_SEND(orxEVENT_TYPE_INPUT, orxINPUT_EVENT_SELECT_SET, orxNULL, orxNULL, &stPayload);
       }
     }
+  }
+  else
+  {
+    /* Clears current set */
+    sstInput.pstCurrentSet = orxNULL;
   }
 
   /* Done! */
@@ -1754,7 +1771,8 @@ orxFLOAT orxFASTCALL orxInput_GetValue(const orxSTRING _zInputName)
           /* Updates result */
           fResult = pstEntry->fExternalValue;
         }
-        else
+        /* Is active? */
+        else if(orxFLAG_TEST(pstEntry->u32Status, orxINPUT_KU32_ENTRY_FLAG_ACTIVE))
         {
           /* For all bindings */
           for(i = 0; i < orxINPUT_KU32_BINDING_NUMBER; i++)
@@ -2060,7 +2078,7 @@ orxSTATUS orxFASTCALL orxInput_Bind(const orxSTRING _zName, orxINPUT_TYPE _eType
   orxASSERT(orxFLAG_TEST(sstInput.u32Flags, orxINPUT_KU32_STATIC_FLAG_READY));
   orxASSERT(_zName != orxNULL);
   orxASSERT((_eType == orxINPUT_TYPE_NONE) || (_eType < orxINPUT_TYPE_NUMBER));
-  orxASSERT(_eMode < orxINPUT_MODE_NUMBER);
+  orxASSERT((_eMode == orxINPUT_MODE_NONE) || (_eMode < orxINPUT_MODE_NUMBER));
 
   /* Valid? */
   if((sstInput.pstCurrentSet != orxNULL) && (_zName != orxSTRING_EMPTY) && (_eType != orxINPUT_TYPE_NONE))

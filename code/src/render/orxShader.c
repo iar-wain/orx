@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -34,6 +34,7 @@
 
 #include "debug/orxDebug.h"
 #include "memory/orxMemory.h"
+#include "core/orxClock.h"
 #include "core/orxConfig.h"
 #include "core/orxEvent.h"
 #include "core/orxResource.h"
@@ -45,6 +46,12 @@
 #include "render/orxViewport.h"
 #include "utils/orxHashTable.h"
 #include "utils/orxString.h"
+
+#ifdef __orxMSVC__
+
+  #include <malloc.h>
+
+#endif /* __orxMSVC__ */
 
 
 /** Module flags
@@ -63,6 +70,7 @@
 #define orxSHADER_KU32_FLAG_ENABLED           0x10000000  /**< Enabled flag */
 #define orxSHADER_KU32_FLAG_COMPILED          0x20000000  /**< Compiled flag */
 #define orxSHADER_KU32_FLAG_USE_CUSTOM_PARAM  0x40000000  /**< No custom param flag */
+#define orxSHADER_KU32_FLAG_CACHED            0x80000000  /**< Cached flag */
 
 #define orxSHADER_KU32_MASK_ALL               0xFFFFFFFF  /**< All mask */
 
@@ -74,6 +82,7 @@
 #define orxSHADER_KU32_BANK_SIZE              32          /**< Bank size */
 
 #define orxSHADER_KZ_CONFIG_CODE              "Code"
+#define orxSHADER_KZ_CONFIG_CODE_LIST         "CodeList"
 #define orxSHADER_KZ_CONFIG_PARAM_LIST        "ParamList"
 #define orxSHADER_KZ_CONFIG_USE_CUSTOM_PARAM  "UseCustomParam"
 #define orxSHADER_KZ_CONFIG_KEEP_IN_CACHE     "KeepInCache"
@@ -114,7 +123,6 @@ struct __orxSHADER_t
   orxHANDLE       hData;                                  /**< Compiled shader data : 48 */
   orxBANK        *pstParamValueBank;                      /**< Parameter value bank : 52 */
   orxBANK        *pstParamBank;                           /**< Parameter bank : 56 */
-  orxU32          u32CodeID;                              /**< Code ID : 60 */
 };
 
 /** Static structure
@@ -123,6 +131,7 @@ typedef struct __orxSHADER_STATIC_t
 {
   orxU32        u32Flags;                                 /**< Control flags */
   orxHASHTABLE *pstReferenceTable;                        /**< Reference hash table */
+  const orxCLOCK_INFO *pstClockInfo;                      /**< Core clock info */
 
 } orxSHADER_STATIC;
 
@@ -145,7 +154,6 @@ static orxSHADER_STATIC sstShader;
 static orxSTATUS orxFASTCALL orxShader_ProcessConfigData(orxSHADER *_pstShader)
 {
   orxS32                  i, s32Number;
-  const orxSTRING         zCode;
   orxSHADER_PARAM_VALUE  *pstParamValue;
   orxSTATUS               eResult = orxSTATUS_FAILURE;
 
@@ -294,7 +302,7 @@ static orxSTATUS orxFASTCALL orxShader_ProcessConfigData(orxSHADER *_pstShader)
                 }
 
                 /* Creates texture */
-                ((orxTEXTURE **)as8ValueBuffer)[j] = orxTexture_CreateFromFile(zValue);
+                ((orxTEXTURE **)as8ValueBuffer)[j] = orxTexture_CreateFromFile(zValue, orxFALSE);
               }
               else
               {
@@ -326,7 +334,7 @@ static orxSTATUS orxFASTCALL orxShader_ProcessConfigData(orxSHADER *_pstShader)
               }
 
               /* Creates texture */
-              ((orxTEXTURE **)as8ValueBuffer)[0] = orxTexture_CreateFromFile(zValue);
+              ((orxTEXTURE **)as8ValueBuffer)[0] = orxTexture_CreateFromFile(zValue, orxFALSE);
             }
             else
             {
@@ -351,21 +359,46 @@ static orxSTATUS orxFASTCALL orxShader_ProcessConfigData(orxSHADER *_pstShader)
     }
   }
 
-  /* Gets code */
-  zCode = orxConfig_GetString(orxSHADER_KZ_CONFIG_CODE);
-
-  /* Valid? */
-  if(zCode != orxSTRING_EMPTY)
+  /* Has code list? */
+  if(orxConfig_HasValue(orxSHADER_KZ_CONFIG_CODE_LIST) != orxFALSE)
   {
-    /* Sets it */
-    if((eResult = orxShader_CompileCode(_pstShader, zCode)) != orxSTATUS_FAILURE)
+    orxS32 s32Count;
+
+    /* Gets its counter */
+    s32Count = orxConfig_GetListCounter(orxSHADER_KZ_CONFIG_CODE_LIST);
+
     {
-      /* Stores code ID */
-      _pstShader->u32CodeID = orxString_ToCRC(zCode);
+      orxS32 i;
+
+#ifdef __orxMSVC__
+      const orxSTRING *azCodeList = (const orxSTRING *)alloca(s32Count * sizeof(const orxSTRING *));
+#else /* __orxMSVC__ */
+      const orxSTRING azCodeList[s32Count];
+#endif /* __orxMSVC__ */
+
+      /* For all code entries */
+      for(i = 0; i < s32Count; i++)
+      {
+        /* Gets it */
+        azCodeList[i] = orxConfig_GetString(orxConfig_GetListString(orxSHADER_KZ_CONFIG_CODE_LIST, i));
+      }
+
+      /* Compiles code */
+      orxShader_CompileCode(_pstShader, azCodeList, s32Count);
     }
-    else
+  }
+  else
+  {
+    const orxSTRING zCode;
+
+    /* Gets code */
+    zCode = orxConfig_GetString(orxSHADER_KZ_CONFIG_CODE);
+
+    /* Valid? */
+    if(zCode != orxSTRING_EMPTY)
     {
-      _pstShader->u32CodeID = 0;
+      /* Compiles it */
+      eResult = orxShader_CompileCode(_pstShader, &zCode, 1);
     }
   }
 
@@ -453,6 +486,7 @@ void orxFASTCALL orxShader_Setup()
   orxModule_AddDependency(orxMODULE_ID_SHADER, orxMODULE_ID_MEMORY);
   orxModule_AddDependency(orxMODULE_ID_SHADER, orxMODULE_ID_STRING);
   orxModule_AddDependency(orxMODULE_ID_SHADER, orxMODULE_ID_STRUCTURE);
+  orxModule_AddDependency(orxMODULE_ID_SHADER, orxMODULE_ID_CLOCK);
   orxModule_AddDependency(orxMODULE_ID_SHADER, orxMODULE_ID_CONFIG);
   orxModule_AddDependency(orxMODULE_ID_SHADER, orxMODULE_ID_EVENT);
   orxModule_AddDependency(orxMODULE_ID_SHADER, orxMODULE_ID_DISPLAY);
@@ -489,8 +523,44 @@ orxSTATUS orxFASTCALL orxShader_Init()
       /* Success? */
       if(eResult != orxSTATUS_FAILURE)
       {
-        /* Adds event handler */
-        orxEvent_AddHandler(orxEVENT_TYPE_RESOURCE, orxShader_EventHandler);
+        orxCLOCK *pstClock;
+
+        /* Gets core clock */
+        pstClock = orxClock_FindFirst(orx2F(-1.0f), orxCLOCK_TYPE_CORE);
+
+        /* Valid? */
+        if(pstClock != orxNULL)
+        {
+          /* Stores its info */
+          sstShader.pstClockInfo = orxClock_GetInfo(pstClock);
+
+          /* Adds event handler */
+          orxEvent_AddHandler(orxEVENT_TYPE_RESOURCE, orxShader_EventHandler);
+        }
+        else
+        {
+          /* Updates result */
+          eResult = orxSTATUS_FAILURE;
+
+          /* Unregisters structure type */
+          orxStructure_Unregister(orxSTRUCTURE_ID_SHADER);
+
+          /* Deletes reference table */
+          orxHashTable_Delete(sstShader.pstReferenceTable);
+          sstShader.pstReferenceTable = orxNULL;
+
+          /* Logs message */
+          orxDEBUG_PRINT(orxDEBUG_LEVEL_RENDER, "Failed to retrieve core clock.");
+        }
+      }
+      else
+      {
+        /* Deletes reference table */
+        orxHashTable_Delete(sstShader.pstReferenceTable);
+        sstShader.pstReferenceTable = orxNULL;
+
+        /* Logs message */
+        orxDEBUG_PRINT(orxDEBUG_LEVEL_RENDER, "Failed to register shader structure.");
       }
     }
     else
@@ -659,14 +729,14 @@ orxSHADER *orxFASTCALL orxShader_CreateFromConfig(const orxSTRING _zConfigID)
           /* Stores its reference */
           pstResult->zReference = orxConfig_GetCurrentSection();
 
-          /* Protects it */
-          orxConfig_ProtectSection(pstResult->zReference, orxTRUE);
-
           /* Should keep it in cache? */
           if(orxConfig_GetBool(orxSHADER_KZ_CONFIG_KEEP_IN_CACHE) != orxFALSE)
           {
             /* Increases its reference counter to keep it in cache table */
             orxStructure_IncreaseCounter(pstResult);
+
+            /* Updates its flags */
+            orxStructure_SetFlags(pstResult, orxSHADER_KU32_FLAG_CACHED, orxSHADER_KU32_FLAG_NONE);
           }
 
           /* Processes its data */
@@ -729,9 +799,6 @@ orxSTATUS orxFASTCALL orxShader_Delete(orxSHADER *_pstShader)
       /* Removes from hashtable */
       orxHashTable_Remove(sstShader.pstReferenceTable, orxString_ToCRC(_pstShader->zReference));
 
-      /* Unprotects it */
-      orxConfig_ProtectSection(_pstShader->zReference, orxFALSE);
-
       /* Has data? */
       if(orxStructure_TestFlags(_pstShader, orxSHADER_KU32_FLAG_COMPILED))
       {
@@ -773,6 +840,41 @@ orxSTATUS orxFASTCALL orxShader_Delete(orxSHADER *_pstShader)
   /* Done! */
   return eResult;
 }
+
+/** Clears cache (if any shader is still in active use, it'll remain in memory until not referenced anymore)
+ * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
+ */
+orxSTATUS orxFASTCALL orxShader_ClearCache()
+{
+  orxSHADER  *pstShader, *pstNextShader;
+  orxSTATUS   eResult = orxSTATUS_SUCCESS;
+
+  /* Checks */
+  orxASSERT(sstShader.u32Flags & orxSHADER_KU32_STATIC_FLAG_READY);
+
+  /* For all Shaders */
+  for(pstShader = orxSHADER(orxStructure_GetFirst(orxSTRUCTURE_ID_SHADER));
+      pstShader != orxNULL;
+      pstShader = pstNextShader)
+  {
+    /* Gets next shader */
+    pstNextShader = orxSHADER(orxStructure_GetNext(pstShader));
+
+    /* Is cached? */
+    if(orxStructure_TestFlags(pstShader, orxSHADER_KU32_FLAG_CACHED))
+    {
+      /* Updates its flags */
+      orxStructure_SetFlags(pstShader, orxSHADER_KU32_FLAG_NONE, orxSHADER_KU32_FLAG_CACHED);
+
+      /* Deletes its extra reference */
+      orxShader_Delete(pstShader);
+    }
+  }
+
+  /* Done! */
+  return eResult;
+}
+
 
 /** Starts a shader
  * @param[in] _pstShader              Concerned Shader
@@ -824,6 +926,9 @@ orxSTATUS orxFASTCALL orxShader_Start(const orxSHADER *_pstShader, const orxSTRU
         {
           /* Updates owner texture */
           orxViewport_GetTextureList(orxVIEWPORT(_pstOwner), 1, &pstOwnerTexture);
+
+          /* Gets core time */
+          fTime = sstShader.pstClockInfo->fTime;
 
           break;
         }
@@ -1554,12 +1659,13 @@ orxSTATUS orxFASTCALL orxShader_SetVectorParam(orxSHADER *_pstShader, const orxS
   return eResult;
 }
 
-/** Sets shader code (& compiles it)
+/** Sets shader code & compiles it (parameters need to be set before compiling the shader code)
  * @param[in] _pstShader              Concerned Shader
- * @param[in] _zCode                  Shader's code (will be compiled immediately)
+ * @param[in] _azCodeList             List of shader codes to compile (parameters need to be set beforehand), will be processed in order
+ * @param[in] _u32Size                Size of the shader code list
  * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
  */
-orxSTATUS orxFASTCALL orxShader_CompileCode(orxSHADER *_pstShader, const orxSTRING _zCode)
+orxSTATUS orxFASTCALL orxShader_CompileCode(orxSHADER *_pstShader, const orxSTRING *_azCodeList, orxU32 _u32Size)
 {
   orxSTATUS eResult = orxSTATUS_SUCCESS;
 
@@ -1581,10 +1687,10 @@ orxSTATUS orxFASTCALL orxShader_CompileCode(orxSHADER *_pstShader, const orxSTRI
   }
 
   /* Valid? */
-  if((_zCode != orxNULL) && (_zCode != orxSTRING_EMPTY))
+  if((_azCodeList != orxNULL) && (_u32Size > 0))
   {
     /* Creates compiled shader */
-    _pstShader->hData = orxDisplay_CreateShader(_zCode, &(_pstShader->stParamList), orxStructure_TestFlags(_pstShader, orxSHADER_KU32_FLAG_USE_CUSTOM_PARAM) ? orxTRUE : orxFALSE);
+    _pstShader->hData = orxDisplay_CreateShader(_azCodeList, _u32Size, &(_pstShader->stParamList), orxStructure_TestFlags(_pstShader, orxSHADER_KU32_FLAG_USE_CUSTOM_PARAM) ? orxTRUE : orxFALSE);
 
     /* Success? */
     if(_pstShader->hData != orxHANDLE_UNDEFINED)

@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -46,7 +46,7 @@
 #define _orxMODULE_H_
 
 
-#include "base/orxType.h"
+#include "base/orxVersion.h"
 
 
 /** Module enum */
@@ -101,9 +101,11 @@ typedef enum __orxMODULE_ID_t
   orxMODULE_ID_TIMELINE,
   orxMODULE_ID_VIEWPORT,
 
-  orxMODULE_ID_NUMBER,
+  orxMODULE_ID_CORE_NUMBER,
 
-  orxMODULE_ID_MAX_NUMBER = 64,
+  orxMODULE_ID_USER_DEFINED = orxMODULE_ID_CORE_NUMBER,
+
+  orxMODULE_ID_TOTAL_NUMBER = 64,
 
   orxMODULE_ID_NONE = orxENUM_NONE
 

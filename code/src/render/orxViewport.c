@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -58,9 +58,10 @@
 #define orxVIEWPORT_KU32_FLAG_BACKGROUND_COLOR  0x00000004  /**< Has background color flag */
 #define orxVIEWPORT_KU32_FLAG_USE_SCREEN_SIZE   0x00000008  /**< Uses screen size flag */
 #define orxVIEWPORT_KU32_FLAG_AUTO_RESIZE       0x00000010  /**< Auto-resize flag */
-#define orxVIEWPORT_KU32_FLAG_INTERNAL_TEXTURES 0x10000000  /**< Internal texture handling flag  */
-#define orxVIEWPORT_KU32_FLAG_INTERNAL_SHADER   0x20000000  /**< Internal shader pointer handling flag  */
-#define orxVIEWPORT_KU32_FLAG_INTERNAL_CAMERA   0x40000000  /**< Internal camera handling flag  */
+#define orxVIEWPORT_KU32_FLAG_FIXED_RATIO       0x00000020  /**< Fixed ratio flag */
+#define orxVIEWPORT_KU32_FLAG_INTERNAL_TEXTURES 0x00100000  /**< Internal texture handling flag  */
+#define orxVIEWPORT_KU32_FLAG_INTERNAL_SHADER   0x00200000  /**< Internal shader pointer handling flag  */
+#define orxVIEWPORT_KU32_FLAG_INTERNAL_CAMERA   0x00400000  /**< Internal camera handling flag  */
 
 #define orxVIEWPORT_KU32_FLAG_DEFAULT           0x00000009  /**< Default flags */
 
@@ -82,9 +83,12 @@
 #define orxVIEWPORT_KZ_CONFIG_BACKGROUND_COLOR  "BackgroundColor"
 #define orxVIEWPORT_KZ_CONFIG_BACKGROUND_ALPHA  "BackgroundAlpha"
 #define orxVIEWPORT_KZ_CONFIG_CAMERA            "Camera"
+#define orxVIEWPORT_KZ_CONFIG_FIXED_RATIO       "FixedRatio"
 #define orxVIEWPORT_KZ_CONFIG_SHADER_LIST       "ShaderList"
 #define orxVIEWPORT_KZ_CONFIG_BLEND_MODE        "BlendMode"
 #define orxVIEWPORT_KZ_CONFIG_AUTO_RESIZE       "AutoResize"
+#define orxVIEWPORT_KZ_CONFIG_KEEP_IN_CACHE     "KeepInCache"
+#define orxVIEWPORT_KZ_CONFIG_NO_DEBUG          "NoDebug"
 
 #define orxVIEWPORT_KZ_LEFT                     "left"
 #define orxVIEWPORT_KZ_RIGHT                    "right"
@@ -100,19 +104,24 @@
  */
 struct __orxVIEWPORT_t
 {
-  orxSTRUCTURE          stStructure;                                          /**< Public structure, first structure member : 32 */
-  orxFLOAT              fX;                                                   /**< X position (top left corner) : 36 */
-  orxFLOAT              fY;                                                   /**< Y position (top left corner) : 40 */
-  orxFLOAT              fWidth;                                               /**< Width : 44 */
-  orxFLOAT              fHeight;                                              /**< Height : 48 */
-  orxCOLOR              stBackgroundColor;                                    /**< Background color : 64 */
-  orxU32                u32TextureCounter;                                    /**< Associated texture counter : 68 */
-  orxCAMERA            *pstCamera;                                            /**< Associated camera : 72 / 76 */
-  orxSHADERPOINTER     *pstShaderPointer;                                     /**< Shader pointer : 76 / 84 */
-  orxU32                u32TextureOwnerFlags;                                 /**< Texture owner flags : 80 / 88 */
-  orxDISPLAY_BLEND_MODE eBlendMode;                                           /**< Blend mode : 84 / 92 */
-  const orxSTRING       zReference;                                           /**< Reference : 88 / 100 */
-  orxTEXTURE           *apstTextureList[orxVIEWPORT_KU32_MAX_TEXTURE_NUMBER]; /**< Associated texture list : 152 / 228 */
+  orxSTRUCTURE          stStructure;                                          /**< Public structure, first structure member : 40 */
+  orxFLOAT              fX;                                                   /**< X position (top left corner) : 44 */
+  orxFLOAT              fY;                                                   /**< Y position (top left corner) : 48 */
+  orxFLOAT              fWidth;                                               /**< Width : 52 */
+  orxFLOAT              fHeight;                                              /**< Height : 56 */
+  orxCOLOR              stBackgroundColor;                                    /**< Background color : 72 */
+  orxCAMERA            *pstCamera;                                            /**< Associated camera : 80 */
+  orxSHADERPOINTER     *pstShaderPointer;                                     /**< Shader pointer : 88 */
+  orxFLOAT              fFixedRatio;                                          /**< Fixed ratio : 92 */
+  orxU32                u32TextureCounter;                                    /**< Associated texture counter : 96 */
+  orxU32                u32TextureOwnerFlags;                                 /**< Texture owner flags : 100 */
+  orxDISPLAY_BLEND_MODE eBlendMode;                                           /**< Blend mode : 104 */
+  const orxSTRING       zReference;                                           /**< Reference : 112 */
+  orxFLOAT              fRealX;                                               /**< X position (top left corner) : 116 */
+  orxFLOAT              fRealY;                                               /**< Y position (top left corner) : 120 */
+  orxFLOAT              fRealWidth;                                           /**< Width : 124 */
+  orxFLOAT              fRealHeight;                                          /**< Height : 128 */
+  orxTEXTURE           *apstTextureList[orxVIEWPORT_KU32_MAX_TEXTURE_NUMBER]; /**< Associated texture list : 192 */
 };
 
 /** Static structure
@@ -177,10 +186,8 @@ static orxSTATUS orxFASTCALL orxViewport_EventHandler(const orxEVENT *_pstEvent)
           if(pstViewport->u32TextureCounter == 0)
           {
             /* Updates relative position & dimension */
-            pstViewport->fX       = orxMath_Round(pstViewport->fX * fWidthRatio);
-            pstViewport->fWidth   = orxMath_Round(pstViewport->fWidth * fWidthRatio);
-            pstViewport->fY       = orxMath_Round(pstViewport->fY * fHeightRatio);
-            pstViewport->fHeight  = orxMath_Round(pstViewport->fHeight * fHeightRatio);
+            orxViewport_SetSize(pstViewport, pstViewport->fRealWidth * fWidthRatio, pstViewport->fRealHeight * fHeightRatio);
+            orxViewport_SetPosition(pstViewport, pstViewport->fRealX * fWidthRatio, pstViewport->fRealY * fHeightRatio);
 
             /* Sends event */
             orxEVENT_SEND(orxEVENT_TYPE_VIEWPORT, orxVIEWPORT_EVENT_RESIZE, (orxHANDLE)pstViewport, (orxHANDLE)pstViewport, orxNULL);
@@ -194,10 +201,8 @@ static orxSTATUS orxFASTCALL orxViewport_EventHandler(const orxEVENT *_pstEvent)
               orxU32 i;
 
               /* Updates relative position & dimension */
-              pstViewport->fX       = orxMath_Round(pstViewport->fX * fWidthRatio);
-              pstViewport->fWidth   = orxMath_Round(pstViewport->fWidth * fWidthRatio);
-              pstViewport->fY       = orxMath_Round(pstViewport->fY * fHeightRatio);
-              pstViewport->fHeight  = orxMath_Round(pstViewport->fHeight * fHeightRatio);
+              orxViewport_SetSize(pstViewport, pstViewport->fRealWidth * fWidthRatio, pstViewport->fRealHeight * fHeightRatio);
+              orxViewport_SetPosition(pstViewport, pstViewport->fRealX * fWidthRatio, pstViewport->fRealY * fHeightRatio);
 
               /* For all textures */
               for(i = 0; i < pstViewport->u32TextureCounter; i++)
@@ -206,31 +211,17 @@ static orxSTATUS orxFASTCALL orxViewport_EventHandler(const orxEVENT *_pstEvent)
                 if(pstViewport->u32TextureOwnerFlags & (1 << i))
                 {
                   orxBITMAP  *pstBitmap;
-                  orxFLOAT    fWidth, fHeight;
                   orxCHAR     acBuffer[256];
 
                   /* Gets its name */
                   orxString_NPrint(acBuffer, 255, "%s", orxTexture_GetName(pstViewport->apstTextureList[i]));
                   acBuffer[255] = orxCHAR_NULL;
 
-                  /* Gets its linked bitmap */
-                  pstBitmap = orxTexture_GetBitmap(pstViewport->apstTextureList[i]);
-
-                  /* Gets its size */
-                  orxDisplay_GetBitmapSize(pstBitmap, &fWidth, &fHeight);
-
-                  /* Unlinks it */
+                  /* Unlinks its bitmap */
                   orxTexture_UnlinkBitmap(pstViewport->apstTextureList[i]);
 
-                  /* Deletes it */
-                  orxDisplay_DeleteBitmap(pstBitmap);
-
-                  /* Updates size */
-                  fWidth  = orxMath_Round(fWidth * fWidthRatio);
-                  fHeight = orxMath_Round(fHeight * fHeightRatio);
-
                   /* Re-creates it as the right size */
-                  pstBitmap = orxDisplay_CreateBitmap(orxF2U(fWidth), orxF2U(fHeight));
+                  pstBitmap = orxDisplay_CreateBitmap(orxF2U(pstViewport->fWidth), orxF2U(pstViewport->fHeight));
 
                   /* Checks */
                   orxASSERT(pstBitmap != orxNULL);
@@ -239,7 +230,7 @@ static orxSTATUS orxFASTCALL orxViewport_EventHandler(const orxEVENT *_pstEvent)
                   orxDisplay_ClearBitmap(pstBitmap, orx2RGBA(0, 0, 0, 0));
 
                   /* Re-links it */
-                  (void)orxTexture_LinkBitmap(pstViewport->apstTextureList[i], pstBitmap, acBuffer);
+                  orxTexture_LinkBitmap(pstViewport->apstTextureList[i], pstBitmap, acBuffer, orxTRUE);
                 }
               }
 
@@ -416,7 +407,7 @@ orxVIEWPORT *orxFASTCALL orxViewport_Create()
     orxStructure_SetFlags(pstViewport, orxVIEWPORT_KU32_FLAG_DEFAULT, orxVIEWPORT_KU32_FLAG_NONE);
 
     /* Inits vars */
-    pstViewport->fX = pstViewport->fY = orxFLOAT_0;
+    pstViewport->fX = pstViewport->fY = pstViewport->fRealX = pstViewport->fRealY = orxFLOAT_0;
 
     /* Sets default size */
     orxViewport_SetRelativeSize(pstViewport, orxFLOAT_1, orxFLOAT_1);
@@ -461,6 +452,14 @@ orxVIEWPORT *orxFASTCALL orxViewport_CreateFromConfig(const orxSTRING _zConfigID
     {
       const orxSTRING zCameraName;
       orxS32          s32Number;
+      orxBOOL         bFixedSize, bFixedPosition;
+
+      /* No debug? */
+      if(orxConfig_GetBool(orxVIEWPORT_KZ_CONFIG_NO_DEBUG) != orxFALSE)
+      {
+        /* Updates flags */
+        orxStructure_SetFlags(pstResult, orxVIEWPORT_KU32_FLAG_NO_DEBUG, orxVIEWPORT_KU32_FLAG_NONE);
+      }
 
       /* Has plain size */
       if(orxConfig_HasValue(orxVIEWPORT_KZ_CONFIG_SIZE) != orxFALSE)
@@ -472,14 +471,25 @@ orxVIEWPORT *orxFASTCALL orxViewport_CreateFromConfig(const orxSTRING _zConfigID
 
         /* Applies it */
         orxViewport_SetSize(pstResult, vSize.fX, vSize.fY);
+
+        /* Updates status */
+        bFixedSize = orxTRUE;
       }
       else
       {
+        orxFLOAT fWidth, fHeight;
+
         /* Defaults to screen size */
-        orxDisplay_GetScreenSize(&(pstResult->fWidth), &(pstResult->fHeight));
+        orxDisplay_GetScreenSize(&fWidth, &fHeight);
+
+        /* Applies it */
+        orxViewport_SetSize(pstResult, fWidth, fHeight);
 
         /* Updates flags */
         orxStructure_SetFlags(pstResult, orxVIEWPORT_KU32_FLAG_USE_SCREEN_SIZE, orxVIEWPORT_KU32_FLAG_NONE);
+
+        /* Updates status */
+        bFixedSize = orxFALSE;
       }
 
       /* Has plain position */
@@ -492,10 +502,19 @@ orxVIEWPORT *orxFASTCALL orxViewport_CreateFromConfig(const orxSTRING _zConfigID
 
         /* Applies it */
         orxViewport_SetPosition(pstResult, vPos.fX, vPos.fY);
+
+        /* Updates status */
+        bFixedPosition = orxTRUE;
+      }
+      else
+      {
+        /* Updates status */
+        bFixedPosition = orxFALSE;
       }
 
       /* Auto resize */
-      if((orxConfig_HasValue(orxVIEWPORT_KZ_CONFIG_AUTO_RESIZE) == orxFALSE)
+      if(((orxConfig_HasValue(orxVIEWPORT_KZ_CONFIG_AUTO_RESIZE) == orxFALSE)
+       && (bFixedSize == orxFALSE))
       || (orxConfig_GetBool(orxVIEWPORT_KZ_CONFIG_AUTO_RESIZE) != orxFALSE))
       {
         /* Updates flags */
@@ -532,7 +551,7 @@ orxVIEWPORT *orxFASTCALL orxViewport_CreateFromConfig(const orxSTRING _zConfigID
             orxDEBUG_ENABLE_LEVEL(orxDEBUG_LEVEL_DISPLAY, orxFALSE);
 
             /* Creates texture from file */
-            pstTexture = orxTexture_CreateFromFile(zTextureName);
+            pstTexture = orxTexture_CreateFromFile(zTextureName, orxConfig_GetBool(orxVIEWPORT_KZ_CONFIG_KEEP_IN_CACHE));
 
             /* Restores display debug level state */
             orxDEBUG_ENABLE_LEVEL(orxDEBUG_LEVEL_DISPLAY, bDisplayLevelEnabled);
@@ -558,7 +577,7 @@ orxVIEWPORT *orxFASTCALL orxViewport_CreateFromConfig(const orxSTRING _zConfigID
                 if(pstTexture != orxNULL)
                 {
                   /* Links them */
-                  if(orxTexture_LinkBitmap(pstTexture, pstBitmap, zTextureName) != orxSTATUS_FAILURE)
+                  if(orxTexture_LinkBitmap(pstTexture, pstBitmap, zTextureName, orxTRUE) != orxSTATUS_FAILURE)
                   {
                     /* Updates owner flags */
                     u32OwnerFlags |= 1 << i;
@@ -627,27 +646,6 @@ orxVIEWPORT *orxFASTCALL orxViewport_CreateFromConfig(const orxSTRING _zConfigID
             /* Wasn't stored? */
             if(bStored == orxFALSE)
             {
-              /* Was owned? */
-              if(u32OwnerFlags & (1 << j))
-              {
-                orxBITMAP *pstBitmap;
-
-                /* Gets linked bitmap */
-                pstBitmap = orxTexture_GetBitmap(apstTextureList[j]);
-
-                /* Unlinks it */
-                orxTexture_UnlinkBitmap(apstTextureList[j]);
-
-                /* Deletes it */
-                orxDisplay_DeleteBitmap(pstBitmap);
-
-                /* Updates owner flags */
-                u32OwnerFlags &= ~(1 << j);
-              }
-
-              /* Shifts owner flags to remove gap */
-              u32OwnerFlags = (u32OwnerFlags & ((1 << j) - 1)) | ((u32OwnerFlags & ~((1 << (j + 1)) - 1)) >> 1);
-
               /* Deletes it */
               orxTexture_Delete(apstTextureList[j]);
             }
@@ -681,7 +679,7 @@ orxVIEWPORT *orxFASTCALL orxViewport_CreateFromConfig(const orxSTRING _zConfigID
           orxDEBUG_ENABLE_LEVEL(orxDEBUG_LEVEL_DISPLAY, orxFALSE);
 
           /* Creates texture from file */
-          pstTexture = orxTexture_CreateFromFile(zTextureName);
+          pstTexture = orxTexture_CreateFromFile(zTextureName, orxConfig_GetBool(orxVIEWPORT_KZ_CONFIG_KEEP_IN_CACHE));
 
           /* Restores display debug level state */
           orxDEBUG_ENABLE_LEVEL(orxDEBUG_LEVEL_DISPLAY, bDisplayLevelEnabled);
@@ -707,9 +705,9 @@ orxVIEWPORT *orxFASTCALL orxViewport_CreateFromConfig(const orxSTRING _zConfigID
               if(pstTexture != orxNULL)
               {
                 /* Links them */
-                if(orxTexture_LinkBitmap(pstTexture, pstBitmap, zTextureName) != orxSTATUS_FAILURE)
+                if(orxTexture_LinkBitmap(pstTexture, pstBitmap, zTextureName, orxTRUE) != orxSTATUS_FAILURE)
                 {
-                  /* Updates  owner flags */
+                  /* Updates owner flags */
                   u32OwnerFlags = 1;
                 }
                 else
@@ -806,6 +804,23 @@ orxVIEWPORT *orxFASTCALL orxViewport_CreateFromConfig(const orxSTRING _zConfigID
           orxStructure_SetFlags(pstResult, orxVIEWPORT_KU32_FLAG_INTERNAL_CAMERA, orxVIEWPORT_KU32_FLAG_NONE);
         }
       }
+      else
+      {
+        orxFLOAT fRatio;
+
+        /* Gets fixed ratio */
+        fRatio = orxConfig_GetFloat(orxVIEWPORT_KZ_CONFIG_FIXED_RATIO);
+
+        /* Valid? */
+        if(fRatio > orxFLOAT_0)
+        {
+          /* Stores it */
+          pstResult->fFixedRatio = fRatio;
+
+          /* Updates flags */
+          orxStructure_SetFlags(pstResult, orxVIEWPORT_KU32_FLAG_FIXED_RATIO, orxVIEWPORT_KU32_FLAG_NONE);
+        }
+      }
 
       /* Has background color? */
       if(orxConfig_HasValue(orxVIEWPORT_KZ_CONFIG_BACKGROUND_COLOR) != orxFALSE)
@@ -829,61 +844,76 @@ orxVIEWPORT *orxFASTCALL orxViewport_CreateFromConfig(const orxSTRING _zConfigID
       /* Has relative size? */
       if(orxConfig_HasValue(orxVIEWPORT_KZ_CONFIG_RELATIVE_SIZE) != orxFALSE)
       {
-        orxVECTOR vRelSize;
+        /* No fixed size? */
+        if(bFixedSize == orxFALSE)
+        {
+          orxVECTOR vRelSize;
 
-        /* Gets it */
-        orxConfig_GetVector(orxVIEWPORT_KZ_CONFIG_RELATIVE_SIZE, &vRelSize);
+          /* Gets it */
+          orxConfig_GetVector(orxVIEWPORT_KZ_CONFIG_RELATIVE_SIZE, &vRelSize);
 
-        /* Applies it */
-        orxViewport_SetRelativeSize(pstResult, vRelSize.fX, vRelSize.fY);
+          /* Applies it */
+          orxViewport_SetRelativeSize(pstResult, vRelSize.fX, vRelSize.fY);
+        }
+        else
+        {
+          /* Logs message */
+          orxDEBUG_PRINT(orxDEBUG_LEVEL_RENDER, "Viewport [%s]: Ignoring relative size as fixed size was also defined.", _zConfigID);
+        }
       }
 
       /* Has relative position? */
       if(orxConfig_HasValue(orxVIEWPORT_KZ_CONFIG_RELATIVE_POSITION) != orxFALSE)
       {
-        orxCHAR   acBuffer[64];
-        orxSTRING zRelativePos;
-        orxU32    u32AlignmentFlags = orxVIEWPORT_KU32_FLAG_ALIGN_CENTER;
-
-        /* Gets it */
-        acBuffer[sizeof(acBuffer) - 1] = orxCHAR_NULL;
-        zRelativePos = orxString_LowerCase(orxString_NCopy(acBuffer, orxConfig_GetString(orxVIEWPORT_KZ_CONFIG_RELATIVE_POSITION), sizeof(acBuffer) - 1));
-
-        /* Left? */
-        if(orxString_SearchString(zRelativePos, orxVIEWPORT_KZ_LEFT) != orxNULL)
+        /* No fixed position? */
+        if(bFixedPosition == orxFALSE)
         {
-          /* Updates alignment flags */
-          u32AlignmentFlags |= orxVIEWPORT_KU32_FLAG_ALIGN_LEFT;
-        }
-        /* Right? */
-        else if(orxString_SearchString(zRelativePos, orxVIEWPORT_KZ_RIGHT) != orxNULL)
-        {
-          /* Updates alignment flags */
-          u32AlignmentFlags |= orxVIEWPORT_KU32_FLAG_ALIGN_RIGHT;
-        }
+          orxCHAR   acBuffer[64];
+          orxSTRING zRelativePos;
+          orxU32    u32AlignmentFlags = orxVIEWPORT_KU32_FLAG_ALIGN_CENTER;
 
-        /* Top? */
-        if(orxString_SearchString(zRelativePos, orxVIEWPORT_KZ_TOP) != orxNULL)
-        {
-          /* Updates alignment flags */
-          u32AlignmentFlags |= orxVIEWPORT_KU32_FLAG_ALIGN_TOP;
-        }
-        /* Bottom? */
-        else if(orxString_SearchString(zRelativePos, orxVIEWPORT_KZ_BOTTOM) != orxNULL)
-        {
-          /* Updates alignment flags */
-          u32AlignmentFlags |= orxVIEWPORT_KU32_FLAG_ALIGN_BOTTOM;
-        }
+          /* Gets it */
+          acBuffer[sizeof(acBuffer) - 1] = orxCHAR_NULL;
+          zRelativePos = orxString_LowerCase(orxString_NCopy(acBuffer, orxConfig_GetString(orxVIEWPORT_KZ_CONFIG_RELATIVE_POSITION), sizeof(acBuffer) - 1));
 
-        /* Applies it */
-        orxViewport_SetRelativePosition(pstResult, u32AlignmentFlags);
+          /* Left? */
+          if(orxString_SearchString(zRelativePos, orxVIEWPORT_KZ_LEFT) != orxNULL)
+          {
+            /* Updates alignment flags */
+            u32AlignmentFlags |= orxVIEWPORT_KU32_FLAG_ALIGN_LEFT;
+          }
+          /* Right? */
+          else if(orxString_SearchString(zRelativePos, orxVIEWPORT_KZ_RIGHT) != orxNULL)
+          {
+            /* Updates alignment flags */
+            u32AlignmentFlags |= orxVIEWPORT_KU32_FLAG_ALIGN_RIGHT;
+          }
+
+          /* Top? */
+          if(orxString_SearchString(zRelativePos, orxVIEWPORT_KZ_TOP) != orxNULL)
+          {
+            /* Updates alignment flags */
+            u32AlignmentFlags |= orxVIEWPORT_KU32_FLAG_ALIGN_TOP;
+          }
+          /* Bottom? */
+          else if(orxString_SearchString(zRelativePos, orxVIEWPORT_KZ_BOTTOM) != orxNULL)
+          {
+            /* Updates alignment flags */
+            u32AlignmentFlags |= orxVIEWPORT_KU32_FLAG_ALIGN_BOTTOM;
+          }
+
+          /* Applies it */
+          orxViewport_SetRelativePosition(pstResult, u32AlignmentFlags);
+        }
+        else
+        {
+          /* Logs message */
+          orxDEBUG_PRINT(orxDEBUG_LEVEL_RENDER, "Viewport [%s]: Ignoring relative position as fixed position was also defined.", _zConfigID);
+        }
       }
 
       /* Stores its reference key */
       pstResult->zReference = orxConfig_GetCurrentSection();
-
-      /* Protects it */
-      orxConfig_ProtectSection(pstResult->zReference, orxTRUE);
     }
 
     /* Pops previous section */
@@ -947,13 +977,6 @@ orxSTATUS orxFASTCALL orxViewport_Delete(orxVIEWPORT *_pstViewport)
       }
     }
 
-    /* Has reference? */
-    if(_pstViewport->zReference != orxNULL)
-    {
-      /* Unprotects it */
-      orxConfig_ProtectSection(_pstViewport->zReference, orxFALSE);
-    }
-
     /* Deletes structure */
     orxStructure_Delete(_pstViewport);
   }
@@ -1007,21 +1030,6 @@ void orxFASTCALL orxViewport_SetTextureList(orxVIEWPORT *_pstViewport, orxU32 _u
     /* Was internally allocated? */
     if(orxStructure_TestFlags(_pstViewport, orxVIEWPORT_KU32_FLAG_INTERNAL_TEXTURES) != orxFALSE)
     {
-      /* Was bitmap owned? */
-      if(_pstViewport->u32TextureOwnerFlags & (1 << i))
-      {
-        orxBITMAP *pstBitmap;
-
-        /* Gets its linked bitmap */
-        pstBitmap = orxTexture_GetBitmap(_pstViewport->apstTextureList[i]);
-
-        /* Unlinks it */
-        orxTexture_UnlinkBitmap(_pstViewport->apstTextureList[i]);
-
-        /* Deletes it */
-        orxDisplay_DeleteBitmap(pstBitmap);
-      }
-
       /* Removes its owner */
       orxStructure_SetOwner(_pstViewport->apstTextureList[i], orxNULL);
 
@@ -1555,8 +1563,10 @@ void orxFASTCALL orxViewport_SetPosition(orxVIEWPORT *_pstViewport, orxFLOAT _fX
   orxSTRUCTURE_ASSERT(_pstViewport);
 
   /* Updates position */
-  _pstViewport->fX = _fX;
-  _pstViewport->fY = _fY;
+  _pstViewport->fX      = orxMath_Round(_fX);
+  _pstViewport->fY      = orxMath_Round(_fY);
+  _pstViewport->fRealX  = _fX;
+  _pstViewport->fRealY  = _fY;
 
   return;
 }
@@ -1593,39 +1603,43 @@ orxSTATUS orxFASTCALL orxViewport_SetRelativePosition(orxVIEWPORT *_pstViewport,
     if(_u32AlignFlags & orxVIEWPORT_KU32_FLAG_ALIGN_LEFT)
     {
       /* Updates x position */
-      _pstViewport->fX = orxFLOAT_0;
+      _pstViewport->fRealX = orxFLOAT_0;
     }
     /* Align right? */
     else if(_u32AlignFlags & orxVIEWPORT_KU32_FLAG_ALIGN_RIGHT)
     {
       /* Updates x position */
-      _pstViewport->fX = fWidth - _pstViewport->fWidth;
+      _pstViewport->fRealX = fWidth - _pstViewport->fRealWidth;
     }
     /* Align center */
     else
     {
       /* Updates x position */
-      _pstViewport->fX = orx2F(0.5f) * (fWidth - _pstViewport->fWidth);
+      _pstViewport->fRealX = orx2F(0.5f) * (fWidth - _pstViewport->fRealWidth);
     }
 
     /* Align top? */
     if(_u32AlignFlags & orxVIEWPORT_KU32_FLAG_ALIGN_TOP)
     {
       /* Updates y position */
-      _pstViewport->fY = orxFLOAT_0;
+      _pstViewport->fRealY = orxFLOAT_0;
     }
     /* Align bottom? */
     else if(_u32AlignFlags & orxVIEWPORT_KU32_FLAG_ALIGN_BOTTOM)
     {
       /* Updates y position */
-      _pstViewport->fY = fHeight - _pstViewport->fHeight;
+      _pstViewport->fRealY = fHeight - _pstViewport->fRealHeight;
     }
     /* Align center */
     else
     {
       /* Updates y position */
-      _pstViewport->fY = orx2F(0.5f) * (fHeight - _pstViewport->fHeight);
+      _pstViewport->fRealY = orx2F(0.5f) * (fHeight - _pstViewport->fRealHeight);
     }
+
+    /* Updates rounded values */
+    _pstViewport->fX = orxMath_Round(_pstViewport->fRealX);
+    _pstViewport->fY = orxMath_Round(_pstViewport->fRealY);
 
     /* Updates result */
     eResult = orxSTATUS_SUCCESS;
@@ -1675,8 +1689,10 @@ void orxFASTCALL orxViewport_SetSize(orxVIEWPORT *_pstViewport, orxFLOAT _fW, or
   orxSTRUCTURE_ASSERT(_pstViewport);
 
   /* Updates size */
-  _pstViewport->fWidth  = _fW;
-  _pstViewport->fHeight = _fH;
+  _pstViewport->fWidth      = orxMath_Round(_fW);
+  _pstViewport->fHeight     = orxMath_Round(_fH);
+  _pstViewport->fRealWidth  = _fW;
+  _pstViewport->fRealHeight = _fH;
 
   /* Done! */
   return;
@@ -1706,9 +1722,13 @@ orxSTATUS orxFASTCALL orxViewport_SetRelativeSize(orxVIEWPORT *_pstViewport, orx
   if(pstTexture != orxNULL)
   {
     /* Updates viewport size */
-    orxTexture_GetSize(pstTexture, &(_pstViewport->fWidth), &(_pstViewport->fHeight));
-    _pstViewport->fWidth   *= _fW;
-    _pstViewport->fHeight  *= _fH;
+    orxTexture_GetSize(pstTexture, &(_pstViewport->fRealWidth), &(_pstViewport->fRealHeight));
+    _pstViewport->fRealWidth   *= _fW;
+    _pstViewport->fRealHeight  *= _fH;
+
+    /* Updates rounded values */
+    _pstViewport->fWidth  = orxMath_Round(_pstViewport->fRealWidth);
+    _pstViewport->fHeight = orxMath_Round(_pstViewport->fRealHeight);
 
     /* Updates result */
     eResult = orxSTATUS_SUCCESS;
@@ -1844,6 +1864,15 @@ orxFLOAT orxFASTCALL orxViewport_GetCorrectionRatio(const orxVIEWPORT *_pstViewp
 
     /* Updates result */
     fResult = (_pstViewport->fHeight * fCameraWidth) / ( _pstViewport->fWidth * fCameraHeight);
+  }
+  else
+  {
+    /* Has fixed ratio? */
+    if(orxStructure_TestFlags(_pstViewport, orxVIEWPORT_KU32_FLAG_FIXED_RATIO))
+    {
+      /* Updates result */
+      fResult = (_pstViewport->fHeight / _pstViewport->fWidth) * _pstViewport->fFixedRatio;
+    }
   }
 
   /* Done! */

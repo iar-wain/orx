@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -43,6 +43,14 @@
 
 #include "orxInclude.h"
 #include "math/orxVector.h"
+
+
+/** Misc
+ */
+#define orxCOMMAND_KC_BLOCK_MARKER                    '"'                             /**< Block marker character */
+#define orxCOMMAND_KC_PUSH_MARKER                     '>'                             /**< Push marker character */
+#define orxCOMMAND_KC_POP_MARKER                      '<'                             /**< Pop marker character */
+#define orxCOMMAND_KC_GUID_MARKER                     '^'                             /**< GUID marker character */
 
 
 /** Variable type enum
@@ -187,7 +195,7 @@ extern orxDLLAPI const orxSTRING orxFASTCALL          orxCommand_GetPrototype(co
 /** Gets next command using an optional base
 * @param[in]   _zBase             Base name, can be set to orxNULL for no base
 * @param[in]   _zPrevious         Previous command, orxNULL to get the first command
-* @param[out]  _pu32CommonLength  Length of the common prefix of all potential results
+* @param[out]  _pu32CommonLength  Length of the common prefix of all potential results, orxNULL to ignore
 * @return      Next command found, orxNULL if none
 */
 extern orxDLLAPI const orxSTRING orxFASTCALL          orxCommand_GetNext(const orxSTRING _zBase, const orxSTRING _zPrevious, orxU32 *_pu32CommonLength);

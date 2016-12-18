@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -44,7 +44,7 @@
 
 #ifdef __orxMSVC__
 
-  #include "malloc.h"
+  #include <malloc.h>
   #pragma warning(disable : 4200)
 
 #endif /* __orxMSVC__ */
@@ -55,19 +55,12 @@
 #define orxCOMMAND_KU32_STATIC_FLAG_NONE              0x00000000                      /**< No flags */
 
 #define orxCOMMAND_KU32_STATIC_FLAG_READY             0x00000001                      /**< Ready flag */
-#define orxCOMMAND_KU32_STATIC_FLAG_PROCESSING_EVENT  0x10000000                      /** <Processing event flag */
 
 #define orxCOMMAND_KU32_STATIC_MASK_ALL               0xFFFFFFFF                      /**< All mask */
 
 
 /** Misc
  */
-#define orxCOMMAND_KC_BLOCK_MARKER                    '"'                             /**< Block marker character */
-#define orxCOMMAND_KC_PUSH_MARKER                     '>'                             /**< Push marker character */
-#define orxCOMMAND_KC_POP_MARKER                      '<'                             /**< Pop marker character */
-#define orxCOMMAND_KC_GUID_MARKER                     '^'                             /**< GUID marker character */
-
-
 #define orxCOMMAND_KU32_BANK_SIZE                     512
 #define orxCOMMAND_KU32_TRIE_BANK_SIZE                4096
 #define orxCOMMAND_KU32_RESULT_BANK_SIZE              32
@@ -445,7 +438,7 @@ static orxINLINE const orxCOMMAND *orxCommand_FindNext(const orxCOMMAND_TRIE_NOD
   return pstResult;
 }
 
-static orxCOMMAND_VAR *orxFASTCALL orxCommand_Process(const orxSTRING _zCommandLine, const orxU64 _u64GUID, orxCOMMAND_VAR *_pstResult)
+static orxCOMMAND_VAR *orxFASTCALL orxCommand_Process(const orxSTRING _zCommandLine, const orxU64 _u64GUID, orxCOMMAND_VAR *_pstResult, orxBOOL _bSilent)
 {
   const orxSTRING zCommand;
   orxCOMMAND_VAR *pstResult = orxNULL;
@@ -893,8 +886,8 @@ static orxCOMMAND_VAR *orxFASTCALL orxCommand_Process(const orxSTRING _zCommandL
       /* Restores command end */
       *(orxCHAR *)pcCommandEnd = cBackupChar;
 
-      /* Not processing event? */
-      if(!orxFLAG_TEST(sstCommand.u32Flags, orxCOMMAND_KU32_STATIC_FLAG_PROCESSING_EVENT))
+      /* Not silent? */
+      if(_bSilent == orxFALSE)
       {
         /* Logs message */
         orxDEBUG_PRINT(orxDEBUG_LEVEL_SYSTEM, "Can't evaluate command line [%s]: [%s] is not a registered command.", _zCommandLine, zCommand);
@@ -979,14 +972,8 @@ static orxSTATUS orxFASTCALL orxCommand_EventHandler(const orxEVENT *_pstEvent)
       /* Gets payload */
       pstPayload = (orxTIMELINE_EVENT_PAYLOAD *)_pstEvent->pstPayload;
 
-      /* Updates internal status */
-      orxFLAG_SET(sstCommand.u32Flags, orxCOMMAND_KU32_STATIC_FLAG_PROCESSING_EVENT, orxCOMMAND_KU32_STATIC_FLAG_NONE);
-
       /* Processes command */
-      orxCommand_Process(pstPayload->zEvent, orxStructure_GetGUID(orxSTRUCTURE(_pstEvent->hSender)), &stResult);
-
-      /* Updates internal status */
-      orxFLAG_SET(sstCommand.u32Flags, orxCOMMAND_KU32_STATIC_FLAG_NONE, orxCOMMAND_KU32_STATIC_FLAG_PROCESSING_EVENT);
+      orxCommand_Process(pstPayload->zEvent, orxStructure_GetGUID(orxSTRUCTURE(_pstEvent->hSender)), &stResult, orxTRUE);
 
       break;
     }
@@ -2891,7 +2878,7 @@ const orxSTRING orxFASTCALL orxCommand_GetPrototype(const orxSTRING _zCommand)
 /** Gets next command using an optional base
 * @param[in]   _zBase             Base name, can be set to orxNULL for no base
 * @param[in]   _zPrevious         Previous command, orxNULL to get the first command
-* @param[out]  _pu32CommonLength  Length of the common prefix of all potential results
+* @param[out]  _pu32CommonLength  Length of the common prefix of all potential results, orxNULL to ignore
 * @return      Next command found, orxNULL if none
 */
 const orxSTRING orxFASTCALL orxCommand_GetNext(const orxSTRING _zBase, const orxSTRING _zPrevious, orxU32 *_pu32CommonLength)
@@ -3078,7 +3065,7 @@ orxCOMMAND_VAR *orxFASTCALL orxCommand_Evaluate(const orxSTRING _zCommandLine, o
   if((_zCommandLine != orxNULL) && (_zCommandLine != orxSTRING_EMPTY))
   {
     /* Processes it */
-    pstResult = orxCommand_Process(_zCommandLine, orxU64_UNDEFINED, _pstResult);
+    pstResult = orxCommand_Process(_zCommandLine, orxU64_UNDEFINED, _pstResult, orxFALSE);
   }
 
   /* Done! */

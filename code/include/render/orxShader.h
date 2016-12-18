@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -147,6 +147,11 @@ extern orxDLLAPI orxSHADER *orxFASTCALL         orxShader_CreateFromConfig(const
  */
 extern orxDLLAPI orxSTATUS orxFASTCALL          orxShader_Delete(orxSHADER *_pstShader);
 
+/** Clears cache (if any shader is still in active use, it'll remain in memory until not referenced anymore)
+ * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
+ */
+extern orxDLLAPI orxSTATUS orxFASTCALL          orxShader_ClearCache();
+
 /** Starts a shader
  * @param[in] _pstShader              Concerned Shader
  * @param[in] _pstOwner               Owner structure (orxOBJECT / orxVIEWPORT / orxNULL)
@@ -224,10 +229,11 @@ extern orxDLLAPI orxSTATUS orxFASTCALL          orxShader_SetVectorParam(orxSHAD
 
 /** Sets shader code & compiles it (parameters need to be set before compiling the shader code)
  * @param[in] _pstShader              Concerned Shader
- * @param[in] _zCode                  Shader's code to compile (parameters need to be set beforehand)
+ * @param[in] _azCodeList             List of shader codes to compile (parameters need to be set beforehand), will be processed in order
+ * @param[in] _u32Size                Size of the shader code list
  * @return orxSTATUS_SUCCESS / orxSTATUS_FAILURE
  */
-extern orxDLLAPI orxSTATUS orxFASTCALL          orxShader_CompileCode(orxSHADER *_pstShader, const orxSTRING _zCode);
+extern orxDLLAPI orxSTATUS orxFASTCALL          orxShader_CompileCode(orxSHADER *_pstShader, const orxSTRING *_azCodeList, orxU32 _u32Size);
 
 /** Enables/disables a shader
  * @param[in]   _pstShader            Concerned Shader

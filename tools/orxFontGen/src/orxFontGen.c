@@ -33,7 +33,15 @@
 #include "orx.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBIW_MALLOC(sz)        orxMemory_Allocate(sz, orxMEMORY_TYPE_MAIN)
+#define STBIW_REALLOC(p, newsz) orxMemory_Reallocate(p, newsz)
+#define STBIW_FREE(p)           orxMemory_Free(p)
+#define STBIW_MEMMOVE(a, b, sz) orxMemory_Move(a, b, sz)
 #include "stb_image_write.h"
+#undef STBIW_MEMMOVE
+#undef STBIW_FREE
+#undef STBIW_REALLOC
+#undef STBIW_MALLOC
 #undef STB_IMAGE_WRITE_IMPLEMENTATION
 
 #include "ft2build.h"
@@ -69,11 +77,11 @@
 
 #if defined(__orxGCC__) || defined(__orxLLVM__)
 
-  #define orxFONTGEN_LOG(TAG, FORMAT, ...) orxLOG("%-" orxFONTGEN_KZ_LOG_TAG_LENGTH "s" FORMAT, "[" #TAG "]", ##__VA_ARGS__)
+  #define orxFONTGEN_LOG(TAG, FORMAT, ...) orxLOG(orxANSI_KZ_COLOR_FG_YELLOW "%-" orxFONTGEN_KZ_LOG_TAG_LENGTH "s" orxANSI_KZ_COLOR_FG_DEFAULT FORMAT, "[" #TAG "]", ##__VA_ARGS__)
 
 #else // __orxGCC__ || __orxLLVM__
 
-  #define orxFONTGEN_LOG(TAG, FORMAT, ...) orxLOG("%-" orxFONTGEN_KZ_LOG_TAG_LENGTH "s" FORMAT, "[" #TAG "]", __VA_ARGS__)
+  #define orxFONTGEN_LOG(TAG, FORMAT, ...) orxLOG(orxANSI_KZ_COLOR_FG_YELLOW "%-" orxFONTGEN_KZ_LOG_TAG_LENGTH "s" orxANSI_KZ_COLOR_FG_DEFAULT FORMAT, "[" #TAG "]", __VA_ARGS__)
 
 #endif //__orxGCC__ || __orxLLVM__
 

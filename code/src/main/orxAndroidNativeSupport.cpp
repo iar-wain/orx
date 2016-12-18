@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@
  *
  */
 
-#if defined(__orxANDROID_NATIVE__)
+#if defined(TARGET_OS_ANDROID_NATIVE)
 
 #include <android/log.h>
 #include <android_native_app_glue.h>

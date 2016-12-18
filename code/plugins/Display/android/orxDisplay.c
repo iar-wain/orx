@@ -51,7 +51,13 @@
 #define STBI_NO_HDR
 #define STBI_NO_PIC
 #define STBI_NO_PNM
+#define STBI_MALLOC(sz)         orxMemory_Allocate((orxU32)sz, orxMEMORY_TYPE_VIDEO)
+#define STBI_REALLOC(p, newsz)  orxMemory_Reallocate(p, newsz)
+#define STBI_FREE(p)            orxMemory_Free(p)
 #include "stb_image.h"
+#undef STBI_FREE
+#undef STBI_REALLOC
+#undef STBI_MALLOC
 #undef STBI_NO_PNM
 #undef STBI_NO_PIC
 #undef STBI_NO_HDR
@@ -61,17 +67,25 @@
 #undef STBI_NO_STDIO
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBIW_MALLOC(sz)        orxMemory_Allocate(sz, orxMEMORY_TYPE_VIDEO)
+#define STBIW_REALLOC(p, newsz) orxMemory_Reallocate(p, newsz)
+#define STBIW_FREE(p)           orxMemory_Free(p)
+#define STBIW_MEMMOVE(a, b, sz) orxMemory_Move(a, b, sz)
 #include "stb_image_write.h"
+#undef STBIW_MEMMOVE
+#undef STBIW_FREE
+#undef STBIW_REALLOC
+#undef STBIW_MALLOC
 #undef STB_IMAGE_WRITE_IMPLEMENTATION
 
 
 /** Module flags
  */
-#define orxDISPLAY_KU32_STATIC_FLAG_NONE          0x00000000  /**< No flags */
+#define orxDISPLAY_KU32_STATIC_FLAG_NONE        0x00000000  /**< No flags */
 
-#define orxDISPLAY_KU32_STATIC_FLAG_READY         0x00000001  /**< Ready flag */
-#define orxDISPLAY_KU32_STATIC_FLAG_SHADER        0x00000002  /**< Shader support flag */
-#define orxDISPLAY_KU32_STATIC_FLAG_DEPTHBUFFER   0x00000004  /**< Has depth buffer support flag */
+#define orxDISPLAY_KU32_STATIC_FLAG_READY       0x00000001  /**< Ready flag */
+#define orxDISPLAY_KU32_STATIC_FLAG_SHADER      0x00000002  /**< Shader support flag */
+#define orxDISPLAY_KU32_STATIC_FLAG_DEPTHBUFFER 0x00000004  /**< Has depth buffer support flag */
 
 #define orxDISPLAY_KU32_STATIC_MASK_ALL         0xFFFFFFFF  /**< All mask */
 
@@ -87,7 +101,7 @@
 
 #define orxDISPLAY_KU32_VERTEX_BUFFER_SIZE      (4 * 1024)  /**< 1024 items batch capacity */
 #define orxDISPLAY_KU32_INDEX_BUFFER_SIZE       (6 * 1024)  /**< 1024 items batch capacity */
-#define orxDISPLAY_KU32_SHADER_BUFFER_SIZE      65536
+#define orxDISPLAY_KU32_SHADER_BUFFER_SIZE      131072
 
 #define orxDISPLAY_KF_BORDER_FIX                0.1f
 
@@ -355,7 +369,7 @@ orxSTATUS orxFASTCALL orxDisplay_Android_SetVideoMode(const orxDISPLAY_VIDEO_MOD
 
 
 #define GL_MAX_DRAW_BUFFERS                              0x8824
-GL_APICALL void           (* GL_APIENTRY glDrawBuffers) (GLsizei n, const GLenum* bufs);
+void           (* glDrawBuffers) (GLsizei n, const GLenum* bufs);
 
 static orxBOOL gl3stubInit()
 {
@@ -485,37 +499,66 @@ static orxSTATUS orxAndroid_Display_CreateSurface()
     if(windowWidth > 0 && windowHeight > 0)
     {
       /* default to native window size */
-      u32Width = 0;
-      u32Height = 0;
+      u32Width = windowWidth;
+      u32Height = windowHeight;
       fScale = orxFLOAT_1;
 
-      orxConfig_PushSection(KZ_CONFIG_ANDROID);
+      /* Pushes config section */
+      orxConfig_PushSection(orxDISPLAY_KZ_CONFIG_SECTION);
 
-      if (orxConfig_HasValue(KZ_CONFIG_MAX_SURFACE_WIDTH))
+      /* Has ScreenWidth? */
+      if (orxConfig_HasValue(orxDISPLAY_KZ_CONFIG_WIDTH))
       {
-        u32Width = orxConfig_GetU32(KZ_CONFIG_MAX_SURFACE_WIDTH);
-        if ( windowWidth > u32Width )
+        orxU32 u32ConfigWidth;
+
+        u32ConfigWidth = orxConfig_GetU32(orxDISPLAY_KZ_CONFIG_WIDTH);
+        if ( windowWidth > u32ConfigWidth )
         {
+          u32Width = u32ConfigWidth;
           fScale = orx2F(u32Width) / orx2F(windowWidth);
           u32Height = windowHeight * fScale;
           orxDEBUG_PRINT(orxDEBUG_LEVEL_DISPLAY, "scaled windows size: (%dx%d)", u32Width, u32Height);
         }
-      }
-      else if (orxConfig_HasValue(KZ_CONFIG_MAX_SURFACE_HEIGHT))
-      {
-        u32Height = orxConfig_GetU32(KZ_CONFIG_MAX_SURFACE_HEIGHT);
-        if ( windowHeight > u32Height )
+
+        if(orxConfig_HasValue(orxDISPLAY_KZ_CONFIG_HEIGHT))
         {
+          orxDEBUG_PRINT(orxDEBUG_LEVEL_DISPLAY, "WARNING, Display.ScreenHeight ignored.");
+        }
+      }
+      else
+      /* Has ScreenHeight? */
+      if (orxConfig_HasValue(orxDISPLAY_KZ_CONFIG_HEIGHT))
+      {
+        orxU32 u32ConfigHeight;
+
+        u32ConfigHeight = orxConfig_GetU32(orxDISPLAY_KZ_CONFIG_HEIGHT);
+        if ( windowHeight > u32ConfigHeight )
+        {
+          u32Height = u32ConfigHeight;
           fScale = orx2F(u32Height) / orx2F(windowHeight);
           u32Width = windowWidth * fScale;
           orxDEBUG_PRINT(orxDEBUG_LEVEL_DISPLAY, "scaled windows size: (%dx%d)", u32Width, u32Height);
         }
       }
 
-      orxConfig_SetFloat(KZ_CONFIG_SURFACE_SCALE, fScale);
+      /* Updates ScreenHeight value */
+      orxConfig_SetU32(orxDISPLAY_KZ_CONFIG_HEIGHT, u32Height);
+      /* Updates ScreenWidth value */
+      orxConfig_SetU32(orxDISPLAY_KZ_CONFIG_WIDTH, u32Width);
 
+      /* Pops config section */
       orxConfig_PopSection();
 
+      /* Pushes config section */
+      orxConfig_PushSection(KZ_CONFIG_ANDROID);
+
+      /* Save scaling */
+      orxConfig_SetFloat(KZ_CONFIG_SURFACE_SCALE, fScale);
+
+      /* Pops config section */
+      orxConfig_PopSection();
+
+      /* Set framebuffer size */
       ANativeWindow_setBuffersGeometry(window, u32Width, u32Height, sstDisplay.format);
 
       orxDEBUG_PRINT(orxDEBUG_LEVEL_DISPLAY, "Creating new EGL Surface");
@@ -1024,7 +1067,7 @@ static orxSTATUS orxFASTCALL orxDisplay_Android_DecompressBitmap(void *_pContext
   {
     unsigned char  *pu8ImageData;
     GLuint          uiBytesPerPixel;
-  
+
     /* Loads image */
     pu8ImageData = stbi_load_from_memory((unsigned char *)pstInfo->pu8ImageSource, (int)pstInfo->s64Size, (int *)&(pstInfo->uiWidth), (int *)&(pstInfo->uiHeight), (int *)&uiBytesPerPixel, STBI_rgb_alpha);
 
@@ -1065,10 +1108,10 @@ static orxSTATUS orxFASTCALL orxDisplay_Android_DecompressBitmap(void *_pContext
     /* Frees original source from resource */
     orxMemory_Free(pstInfo->pu8ImageSource);
     pstInfo->pu8ImageSource = orxNULL;
- 
+
     /* Frees load info */
     orxMemory_Free(pstInfo);
- 
+
     /* Updates result */
     eResult = orxSTATUS_FAILURE;
   }
@@ -1908,6 +1951,10 @@ static void orxFASTCALL orxDisplay_Android_DrawPrimitive(orxU32 _u32VertexNumber
     /* Updates blend mode */
     sstDisplay.eLastBlendMode = orxDISPLAY_BLEND_MODE_NONE;
   }
+
+  /* Copies vertex buffer */
+  glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizei)(_u32VertexNumber * sizeof(orxDISPLAY_ANDROID_VERTEX)), &(sstDisplay.astVertexList));
+  glASSERT();
 
   /* Only 2 vertices? */
   if(_u32VertexNumber == 2)
@@ -3665,16 +3712,6 @@ orxSTATUS orxFASTCALL orxDisplay_Android_SetVideoMode(const orxDISPLAY_VIDEO_MOD
       sstDisplay.pstScreen->fRecRealHeight  = orxFLOAT_1 / orxU2F(sstDisplay.pstScreen->u32RealHeight);
       sstDisplay.pstScreen->u32DataSize     = sstDisplay.pstScreen->u32RealWidth * sstDisplay.pstScreen->u32RealHeight * 4 * sizeof(orxU8);
 
-      /* Pushes display section */
-      orxConfig_PushSection(orxDISPLAY_KZ_CONFIG_SECTION);
-
-      /* Updates config info */
-      orxConfig_SetFloat(orxDISPLAY_KZ_CONFIG_WIDTH, sstDisplay.pstScreen->fWidth);
-      orxConfig_SetFloat(orxDISPLAY_KZ_CONFIG_HEIGHT, sstDisplay.pstScreen->fHeight);
-
-      /* Pops config section */
-      orxConfig_PopSection();
-
       /* Updates bound texture */
       sstDisplay.apstBoundBitmapList[sstDisplay.s32ActiveTextureUnit] = orxNULL;
 
@@ -3979,8 +4016,6 @@ orxSTATUS orxFASTCALL orxDisplay_Android_Init()
         glASSERT();
 
         /* Updates config info */
-        orxConfig_SetFloat(orxDISPLAY_KZ_CONFIG_WIDTH, sstDisplay.pstScreen->fWidth);
-        orxConfig_SetFloat(orxDISPLAY_KZ_CONFIG_HEIGHT, sstDisplay.pstScreen->fHeight);
         orxConfig_SetU32(orxDISPLAY_KZ_CONFIG_DEPTH, sstDisplay.u32Depth);
 
         /* Pops config section */
@@ -4062,8 +4097,8 @@ orxSTATUS orxFASTCALL orxDisplay_Android_Init()
         sstDisplay.apstBoundBitmapList[sstDisplay.s32ActiveTextureUnit] = orxNULL;
 
         /* Creates default shaders */
-        sstDisplay.pstDefaultShader   = (orxDISPLAY_SHADER*) orxDisplay_CreateShader(szFragmentShaderSource, orxNULL, orxFALSE);
-        sstDisplay.pstNoTextureShader = (orxDISPLAY_SHADER*) orxDisplay_CreateShader(szNoTextureFragmentShaderSource, orxNULL, orxTRUE);
+        sstDisplay.pstDefaultShader   = (orxDISPLAY_SHADER*) orxDisplay_CreateShader(&szFragmentShaderSource, 1, orxNULL, orxFALSE);
+        sstDisplay.pstNoTextureShader = (orxDISPLAY_SHADER*) orxDisplay_CreateShader(&szNoTextureFragmentShaderSource, 1, orxNULL, orxTRUE);
 
         /* Generates index buffer object (VBO/IBO) */
         glGenBuffers(1, &(sstDisplay.uiVertexBuffer));
@@ -4193,7 +4228,7 @@ orxBOOL orxFASTCALL orxDisplay_Android_HasShaderSupport()
   return orxTRUE;
 }
 
-orxHANDLE orxFASTCALL orxDisplay_Android_CreateShader(const orxSTRING _zCode, const orxLINKLIST *_pstParamList, orxBOOL _bUseCustomParam)
+orxHANDLE orxFASTCALL orxDisplay_Android_CreateShader(const orxSTRING *_azCodeList, orxU32 _u32Size, const orxLINKLIST *_pstParamList, orxBOOL _bUseCustomParam)
 {
   orxHANDLE hResult = orxHANDLE_UNDEFINED;
 
@@ -4204,7 +4239,7 @@ orxHANDLE orxFASTCALL orxDisplay_Android_CreateShader(const orxSTRING _zCode, co
   if(orxFLAG_TEST(sstDisplay.u32Flags, orxDISPLAY_KU32_STATIC_FLAG_SHADER))
   {
     /* Valid? */
-    if((_zCode != orxNULL) && (_zCode != orxSTRING_EMPTY))
+    if((_azCodeList != orxNULL) && (_u32Size > 0))
     {
       orxDISPLAY_SHADER *pstShader;
 
@@ -4214,8 +4249,9 @@ orxHANDLE orxFASTCALL orxDisplay_Android_CreateShader(const orxSTRING _zCode, co
       /* Successful? */
       if(pstShader != orxNULL)
       {
-        orxCHAR  *pc;
+        orxCHAR  *pc, *pcReplace;
         orxS32    s32Free, s32Offset;
+        orxU32    i;
 
         /* Inits shader code buffer */
         sstDisplay.acShaderCodeBuffer[0]  = sstDisplay.acShaderCodeBuffer[orxDISPLAY_KU32_SHADER_BUFFER_SIZE - 1] = orxCHAR_NULL;
@@ -4225,8 +4261,7 @@ orxHANDLE orxFASTCALL orxDisplay_Android_CreateShader(const orxSTRING _zCode, co
         /* Has parameters? */
         if(_pstParamList != orxNULL)
         {
-          orxCHAR          *pcReplace;
-          orxSHADER_PARAM  *pstParam;
+          orxSHADER_PARAM *pstParam;
 
           /* Adds wrapping code */
           s32Offset = orxString_NPrint(pc, s32Free, "precision mediump float;\nvarying vec2 _gl_TexCoord0_;\nvarying vec4 _Color0_;\n");
@@ -4278,39 +4313,42 @@ orxHANDLE orxFASTCALL orxDisplay_Android_CreateShader(const orxSTRING _zCode, co
               }
             }
           }
+        }
 
-          /* Adds code */
-          s32Offset = orxString_NPrint(pc, s32Free, "%s\n", _zCode);
+        /* Adds line directive */
+        s32Offset = orxString_NPrint(pc, s32Free, "#line 0\n");
+        pc       += s32Offset;
+        s32Free  -= s32Offset;
+
+        /* Adds all code fragments */
+        for(i = 0; i < _u32Size; i++)
+        {
+          s32Offset = orxString_NPrint(pc, s32Free, "%s\n", _azCodeList[i]);
           pc       += s32Offset;
           s32Free  -= s32Offset;
-
-          /* For all gl_TexCoord[0] */
-          for(pcReplace = (orxCHAR *)orxString_SearchString(sstDisplay.acShaderCodeBuffer, "gl_TexCoord[0]");
-              pcReplace != orxNULL;
-              pcReplace = (orxCHAR *)orxString_SearchString(pcReplace + 14 * sizeof(orxCHAR), "gl_TexCoord[0]"))
-          {
-            /* Replaces it */
-            orxMemory_Copy(pcReplace, "_gl_TexCoord0_", 14 * sizeof(orxCHAR));
-          }
-
-          /* For all gl_Color */
-          for(pcReplace = (orxCHAR *)orxString_SearchString(sstDisplay.acShaderCodeBuffer, "gl_Color");
-              pcReplace != orxNULL;
-              pcReplace = (orxCHAR *)orxString_SearchString(pcReplace + 8 * sizeof(orxCHAR), "gl_Color"))
-          {
-            /* Replaces it */
-            orxMemory_Copy(pcReplace, "_Color0_", 8 * sizeof(orxCHAR));
-          }
         }
-        else
+
+        /* For all gl_TexCoord[0] */
+        for(pcReplace = (orxCHAR *)orxString_SearchString(sstDisplay.acShaderCodeBuffer, "gl_TexCoord[0]");
+            pcReplace != orxNULL;
+            pcReplace = (orxCHAR *)orxString_SearchString(pcReplace + 14 * sizeof(orxCHAR), "gl_TexCoord[0]"))
         {
-          /* Adds code */
-          orxString_NPrint(pc, s32Free, "%s\n", _zCode);
+          /* Replaces it */
+          orxMemory_Copy(pcReplace, "_gl_TexCoord0_", 14 * sizeof(orxCHAR));
+        }
+
+        /* For all gl_Color */
+        for(pcReplace = (orxCHAR *)orxString_SearchString(sstDisplay.acShaderCodeBuffer, "gl_Color");
+            pcReplace != orxNULL;
+            pcReplace = (orxCHAR *)orxString_SearchString(pcReplace + 8 * sizeof(orxCHAR), "gl_Color"))
+        {
+          /* Replaces it */
+          orxMemory_Copy(pcReplace, "_Color0_", 8 * sizeof(orxCHAR));
         }
 
         /* Inits shader */
         orxMemory_Zero(&(pstShader->stNode), sizeof(orxLINKLIST_NODE));
-        pstShader->uiProgram              = (GLuint)orxHANDLE_UNDEFINED;
+        pstShader->uiProgram              = (GLuint)orxU32_UNDEFINED;
         pstShader->iTextureCounter        = 0;
         pstShader->s32ParamCounter        = 0;
         pstShader->bPending               = orxFALSE;

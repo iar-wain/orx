@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -96,6 +96,9 @@
 #define orxRENDER_KF_INPUT_RESET_DELAY              orx2F(0.02f)
 
 #define orxRENDER_KU32_MAX_MARKER_DEPTH             16
+
+#define orxRENDER_KC_CONSOLE_INSERT_MARKER          '_'
+#define orxRENDER_KC_CONSOLE_OVERTYPE_MARKER        '#'
 
 
 /***************************************************************************
@@ -369,7 +372,7 @@ static orxINLINE void orxRender_Home_RenderProfiler()
   fMarkerWidth = ((orxCHARACTER_GLYPH *)orxHashTable_Get(pstMap->pstCharacterTable, orxRENDER_KC_PROFILER_DEPTH_MARKER))->fWidth;
 
   /* Creates pixel texture */
-  pstTexture = orxTexture_CreateFromFile(orxTEXTURE_KZ_PIXEL);
+  pstTexture = orxTexture_CreateFromFile(orxTEXTURE_KZ_PIXEL, orxFALSE);
 
   /* Gets its bitmap */
   pstBitmap = orxTexture_GetBitmap(pstTexture);
@@ -1036,54 +1039,92 @@ static orxINLINE void orxRender_Home_RenderProfiler()
     stTransform.fDstY = fScreenHeight - (orxRENDER_KF_PROFILER_SEPARATOR_WIDTH * fScreenHeight + fBorder);
   }
 
-  /* For all memory types */
-  for(i = 0; i < orxMEMORY_TYPE_NUMBER; i++)
+  /* Draws memory stats */
   {
-    orxU32                  u32Counter, u32PeakCounter, u32Size, u32PeakSize, u32OperationCounter, u32UnitIndex;
-    orxFLOAT                fSize, fPeakSize;
     static const orxFLOAT   sfSaturationThreshold = orxU2F(1.0f / (128.0f * 1024.0f * 1024.0f));
     static const orxSTRING  azUnitList[] = {"B", "KB", "MB", "GB"};
+    orxU32                  u32TotalCounter = 0, u32TotalPeakCounter = 0, u32TotalSize = 0, u32TotalPeakSize = 0, u32TotalOperationCounter = 0, u32UnitIndex;
 
-    /* Updates position */
-    if(bLandscape != orxFALSE)
+    /* For all memory types, including total */
+    for(i = 0; i <= orxMEMORY_TYPE_NUMBER; i++)
     {
-      stTransform.fDstY += 20.0f;
+      const orxSTRING zType;
+      orxU32          u32Counter, u32PeakCounter, u32Size, u32PeakSize, u32OperationCounter;
+      orxFLOAT        fSize, fPeakSize;
+
+      /* Updates position */
+      if(bLandscape != orxFALSE)
+      {
+        stTransform.fDstY += 20.0f;
+      }
+      else
+      {
+        stTransform.fDstX += 20.0f;
+      }
+
+      /* Total? */
+      if(i == orxMEMORY_TYPE_NUMBER)
+      {
+        /* Gets values */
+        u32Counter           = u32TotalCounter;
+        u32PeakCounter       = u32TotalPeakCounter;
+        u32Size              = u32TotalSize;
+        u32PeakSize          = u32TotalPeakSize;
+        u32OperationCounter  = u32TotalOperationCounter;
+      }
+      else
+      {
+        /* Gets its usage info */
+        orxMemory_GetUsage((orxMEMORY_TYPE)i, &u32Counter, &u32PeakCounter, &u32Size, &u32PeakSize, &u32OperationCounter);
+
+        /* Updates totals */
+        u32TotalCounter          += u32Counter;
+        u32TotalPeakCounter      += u32PeakCounter;
+        u32TotalSize             += u32Size;
+        u32TotalPeakSize         += u32PeakSize;
+        u32TotalOperationCounter += u32OperationCounter;
+      }
+
+      /* Finds best unit */
+      for(u32UnitIndex = 0, fSize = orxU2F(u32Size), fPeakSize = orxU2F(u32PeakSize);
+          (u32UnitIndex < orxARRAY_GET_ITEM_COUNT(azUnitList) - 1) && (fPeakSize > orx2F(1024.0f));
+          u32UnitIndex++, fSize *= orx2F(1.0f/1024.0f), fPeakSize *= orx2F(1.0f/1024.0f));
+
+      /* Is used? */
+      if(u32Counter > 0)
+      {
+        /* Inits display color */
+        orxColor_SetRGBA(&stColor, orx2RGBA(0xFF, 0xFF, 0xFF, 0xCC));
+      }
+      else
+      {
+        /* Inits display color */
+        orxColor_SetRGBA(&stColor, orx2RGBA(0x66, 0x66, 0x66, 0xCC));
+      }
+
+      /* Updates color */
+      orxColor_FromRGBToHSV(&stColor, &stColor);
+      stColor.vHSV.fH = orxLERP(0.33f, orxFLOAT_0, orxU2F(u32Size) * sfSaturationThreshold);
+      stColor.vHSV.fS = orx2F(0.8f);
+      orxColor_FromHSVToRGB(&stColor, &stColor);
+      orxDisplay_SetBitmapColor(pstFontBitmap, orxColor_ToRGBA(&stColor));
+
+      /* Total? */
+      if(i == orxMEMORY_TYPE_NUMBER)
+      {
+        /* Gets type string */
+        zType = "MEM_TOTAL";
+      }
+      else
+      {
+        /* Gets type string */
+        zType = orxMemory_GetTypeName((orxMEMORY_TYPE)i);
+      }
+
+      /* Draws it */
+      orxString_NPrint(acLabel, sizeof(acLabel) - 1, "%-12s[%d|%dx] [%.2f|%.2f%s] [%d#]", zType, u32Counter, u32PeakCounter, fSize, fPeakSize, azUnitList[u32UnitIndex], u32OperationCounter);
+      orxDisplay_TransformText(acLabel, pstFontBitmap, orxFont_GetMap(pstFont), &stTransform, orxDISPLAY_SMOOTHING_NONE, orxDISPLAY_BLEND_MODE_ALPHA);
     }
-    else
-    {
-      stTransform.fDstX += 20.0f;
-    }
-
-    /* Gets its usage info */
-    orxMemory_GetUsage((orxMEMORY_TYPE)i, &u32Counter, &u32PeakCounter, &u32Size, &u32PeakSize, &u32OperationCounter);
-
-    /* Finds best unit */
-    for(u32UnitIndex = 0, fSize = orxU2F(u32Size), fPeakSize = orxU2F(u32PeakSize);
-        (u32UnitIndex < sizeof(azUnitList) / sizeof(azUnitList[0]) - 1) && (fPeakSize > orx2F(1024.0f));
-        u32UnitIndex++, fSize *= orx2F(1.0f/1024.0f), fPeakSize *= orx2F(1.0f/1024.0f));
-
-    /* Is used? */
-    if(u32Counter > 0)
-    {
-      /* Inits display color */
-      orxColor_SetRGBA(&stColor, orx2RGBA(0xFF, 0xFF, 0xFF, 0xCC));
-    }
-    else
-    {
-      /* Inits display color */
-      orxColor_SetRGBA(&stColor, orx2RGBA(0x66, 0x66, 0x66, 0xCC));
-    }
-
-    /* Updates color */
-    orxColor_FromRGBToHSV(&stColor, &stColor);
-    stColor.vHSV.fH = orxLERP(0.33f, orxFLOAT_0, orxU2F(u32Size) * sfSaturationThreshold);
-    stColor.vHSV.fS = orx2F(0.8f);
-    orxColor_FromHSVToRGB(&stColor, &stColor);
-    orxDisplay_SetBitmapColor(pstFontBitmap, orxColor_ToRGBA(&stColor));
-
-    /* Draws it */
-    orxString_NPrint(acLabel, sizeof(acLabel) - 1, "%-12s[%d|%dx] [%.2f/%.2f%s] [%d#]", orxMemory_GetTypeName((orxMEMORY_TYPE)i), u32Counter, u32PeakCounter, fSize, fPeakSize, azUnitList[u32UnitIndex], u32OperationCounter);
-    orxDisplay_TransformText(acLabel, pstFontBitmap, orxFont_GetMap(pstFont), &stTransform, orxDISPLAY_SMOOTHING_NONE, orxDISPLAY_BLEND_MODE_ALPHA);
   }
 
 #endif /* __orxPROFILER__ */
@@ -1108,10 +1149,10 @@ static orxINLINE void orxRender_Home_RenderConsole()
   orxDISPLAY_TRANSFORM    stTransform;
   orxTEXTURE             *pstTexture;
   orxBITMAP              *pstBitmap, *pstFontBitmap;
-  orxFLOAT                fScreenWidth, fScreenHeight;
-  orxU32                  u32CursorIndex, i;
+  orxFLOAT                fScreenWidth, fScreenHeight, fBackupY;
+  orxU32                  u32CursorIndex, i, u32Counter, u32MaxLength, u32Offset;
   orxCHAR                 acBackup[2];
-  orxFLOAT                fCharacterHeight;
+  orxFLOAT                fCharacterHeight, fCharacterWidth;
   orxCOLOR                stColor;
   const orxFONT          *pstFont;
   const orxCHARACTER_MAP *pstMap;
@@ -1132,11 +1173,12 @@ static orxINLINE void orxRender_Home_RenderConsole()
   /* Gets its map */
   pstMap = orxFont_GetMap(pstFont);
 
-  /* Gets character height */
-  fCharacterHeight = orxFont_GetCharacterHeight(pstFont);
+  /* Gets character size */
+  fCharacterHeight  = orxFont_GetCharacterHeight(pstFont);
+  fCharacterWidth   = orxFont_GetCharacterWidth(pstFont, orxString_GetFirstCharacterCodePoint(" ", orxNULL));
 
   /* Creates pixel texture */
-  pstTexture = orxTexture_CreateFromFile(orxTEXTURE_KZ_PIXEL);
+  pstTexture = orxTexture_CreateFromFile(orxTEXTURE_KZ_PIXEL, orxFALSE);
 
   /* Gets its bitmap */
   pstBitmap = orxTexture_GetBitmap(pstTexture);
@@ -1171,6 +1213,9 @@ static orxINLINE void orxRender_Home_RenderConsole()
   {
     /* Updates background color */
     orxDisplay_SetBitmapColor(pstBitmap, orxRENDER_KST_CONSOLE_BACKGROUND_COLOR);
+
+    /* Updates color */
+    orxColor_SetRGBA(&stColor, orxRENDER_KST_CONSOLE_BACKGROUND_COLOR);
   }
 
   /* Pops config section */
@@ -1218,12 +1263,12 @@ static orxINLINE void orxRender_Home_RenderConsole()
       orxDisplay_TransformText(zText, pstFontBitmap, pstMap, &stTransform, orxDISPLAY_SMOOTHING_NONE, orxDISPLAY_BLEND_MODE_ALPHA);
 
       /* Overrides characters at cursor position */
-      ((orxCHAR*)zText)[u32CursorIndex] = '_';
+      ((orxCHAR*)zText)[u32CursorIndex] = orxRENDER_KC_CONSOLE_INSERT_MARKER;
     }
     else
     {
       /* Overrides characters at cursor position */
-      ((orxCHAR*)zText)[u32CursorIndex] = '#';
+      ((orxCHAR*)zText)[u32CursorIndex] = orxRENDER_KC_CONSOLE_OVERTYPE_MARKER;
 
       /* Displays full input, including auto-completion */
       orxDisplay_TransformText(zText, pstFontBitmap, pstMap, &stTransform, orxDISPLAY_SMOOTHING_NONE, orxDISPLAY_BLEND_MODE_ALPHA);
@@ -1252,10 +1297,61 @@ static orxINLINE void orxRender_Home_RenderConsole()
 
   /* While there are log lines to display */
   orxDisplay_SetBitmapColor(pstFontBitmap, orxRENDER_KST_CONSOLE_LOG_COLOR);
-  for(i = 0, stTransform.fDstY -= orx2F(2.0f) * fCharacterHeight;
+  for(i = 0, stTransform.fDstY -= orx2F(2.0f) * fCharacterHeight, fBackupY = stTransform.fDstY;
       (stTransform.fDstY >= sstRender.fConsoleOffset - fCharacterHeight) && ((zText = orxConsole_GetTrailLogLine(i)) != orxSTRING_EMPTY);
       i++, stTransform.fDstY -= fCharacterHeight)
   {
+    /* Displays it */
+    orxDisplay_TransformText(zText, pstFontBitmap, pstMap, &stTransform, orxDISPLAY_SMOOTHING_NONE, orxDISPLAY_BLEND_MODE_ALPHA);
+  }
+
+  /* Gets log offset */
+  u32Offset = orxConsole_GetTrailLogLineOffset();
+
+  /* Has offset? */
+  if(u32Offset != 0)
+  {
+    orxCHAR   acBuffer[32];
+    orxFLOAT  fBackupX;
+
+    /* Displays it */
+    orxDisplay_SetBitmapColor(pstFontBitmap, orxRENDER_KST_CONSOLE_INPUT_COLOR);
+    orxString_NPrint(acBuffer, sizeof(acBuffer) - 1, "+%u %s", u32Offset, (u32Offset == 1) ? "line" : "lines");
+    fBackupX = stTransform.fDstX;
+    stTransform.fDstX = orxMath_Floor(fScreenWidth * (orxFLOAT_1 - orxRENDER_KF_CONSOLE_MARGIN_WIDTH)) - (orxString_GetLength(acBuffer) * fCharacterWidth);
+    stTransform.fDstY = fBackupY;
+    orxDisplay_TransformText(acBuffer, pstFontBitmap, pstMap, &stTransform, orxDISPLAY_SMOOTHING_NONE, orxDISPLAY_BLEND_MODE_ALPHA);
+    stTransform.fDstX = fBackupX;
+  }
+
+  /* Gets completion counter */
+  u32Counter = orxConsole_GetCompletionCounter(&u32MaxLength);
+
+  /* Draws overlay */
+  stColor.fAlpha      = 0.9f;
+  orxDisplay_SetBitmapColor(pstBitmap, orxColor_ToRGBA(&stColor));
+  stTransform.fDstY   = fBackupY - (u32Counter - 1) * fCharacterHeight;
+  stTransform.fScaleX = u32MaxLength * fCharacterWidth;
+  stTransform.fScaleY = u32Counter * fCharacterHeight;
+  orxDisplay_TransformBitmap(pstBitmap, &stTransform, orxDISPLAY_SMOOTHING_NONE, orxDISPLAY_BLEND_MODE_ALPHA);
+  stTransform.fScaleY = stTransform.fScaleX = orxFLOAT_1;
+
+  /* For all current completions */
+  for(i = 0;
+      i < u32Counter;
+      i++)
+  {
+    orxBOOL bActive;
+
+    /* Gets it */
+    zText = orxConsole_GetCompletion(i, &bActive);
+
+    /* Sets color */
+    orxDisplay_SetBitmapColor(pstFontBitmap, (bActive != orxFALSE) ? orxRENDER_KST_CONSOLE_INPUT_COLOR : orxRENDER_KST_CONSOLE_AUTOCOMPLETE_COLOR);
+
+    /* Updates position */
+    stTransform.fDstY = fBackupY - ((u32Counter - i - 1) * fCharacterHeight);
+
     /* Displays it */
     orxDisplay_TransformText(zText, pstFontBitmap, pstMap, &stTransform, orxDISPLAY_SMOOTHING_NONE, orxDISPLAY_BLEND_MODE_ALPHA);
   }

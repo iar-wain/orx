@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -282,7 +282,7 @@ extern orxDLLAPI orxSTATUS orxFASTCALL                    orxResource_RegisterTy
 /** Gets number of registered resource types
  * @return Number of registered resource types
  */
-extern orxDLLAPI orxU32 orxFASTCALL                       orxResource_GetTypeCounter(const orxSTRING _zGroup);
+extern orxDLLAPI orxU32 orxFASTCALL                       orxResource_GetTypeCounter();
 
 /** Gets registered type info at given index
  * @param[in] _u32Index         Index of storage

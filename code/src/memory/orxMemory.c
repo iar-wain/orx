@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -293,6 +293,72 @@ void *orxFASTCALL orxMemory_Allocate(orxU32 _u32Size, orxMEMORY_TYPE _eMemType)
   pResult = dlmalloc((size_t)_u32Size);
 
 #endif /* __orxPROFILER__ */
+
+  /* Done! */
+  return pResult;
+}
+
+/** Reallocates a previously allocated memory block, with the given new size and returns a pointer on it
+ * If possible, it'll keep the current pointer and extend the memory block, if not it'll allocate a new block,
+ * copy the data over and deallocates the original block
+ * @param[in]  _pMem      Memory block to reallocate
+ * @param[in]  _u32Size   Size of the memory to allocate
+ * @return  returns a pointer to the reallocated memory block or orxNULL if an error has occurred
+ */
+void *orxFASTCALL orxMemory_Reallocate(void *_pMem, orxU32 _u32Size)
+{
+  void *pResult;
+
+  /* Checks */
+  orxASSERT((sstMemory.u32Flags & orxMEMORY_KU32_STATIC_FLAG_READY) == orxMEMORY_KU32_STATIC_FLAG_READY);
+
+  /* Null? */
+  if(_pMem == orxNULL)
+  {
+    /* Allocates it */
+    pResult = orxMemory_Allocate(_u32Size, orxMEMORY_TYPE_TEMP);
+  }
+  else
+  {
+
+#ifdef __orxPROFILER__
+
+    orxMEMORY_TYPE eMemType;
+    size_t         uMemoryChunkSize;
+
+    /* Updates pointer */
+    _pMem = (orxU8 *)_pMem - sizeof(orxMEMORY_TYPE);
+
+    /* Gets memory type from memory chunk tag */
+    eMemType = *(orxMEMORY_TYPE *)_pMem;
+
+    /* Gets memory chunk size */
+    uMemoryChunkSize = dlmalloc_usable_size(_pMem);
+
+    /* Reallocates memory */
+    pResult = dlrealloc(_pMem, (size_t)(_u32Size + sizeof(orxMEMORY_TYPE)));
+
+    /* Success? */
+    if(pResult != NULL)
+    {
+      /* Tags memory chunk */
+      *(orxMEMORY_TYPE *)pResult = eMemType;
+
+      /* Updates memory tracker */
+      orxMemory_Track(eMemType, (orxU32)(uMemoryChunkSize - sizeof(orxMEMORY_TYPE)), orxFALSE);
+      orxMemory_Track(eMemType, (orxU32)(dlmalloc_usable_size(pResult) - sizeof(orxMEMORY_TYPE)), orxTRUE);
+
+      /* Updates result */
+      pResult = (orxU8 *)pResult + sizeof(orxMEMORY_TYPE);
+    }
+
+#else /* __orxPROFILER__ */
+
+    /* Reallocates memory */
+    pResult = dlrealloc(_pMem, (size_t)_u32Size);
+
+#endif /* __orxPROFILER__ */
+  }
 
   /* Done! */
   return pResult;

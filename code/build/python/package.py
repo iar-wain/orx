@@ -17,6 +17,10 @@ platformlist = [
     'tutovs2013-32',
     'vs2013-64',
     'tutovs2013-64',
+    'vs2015-32',
+    'tutovs2015-32',
+    'vs2015-64',
+    'tutovs2015-64',
     'mingw',
     'tutomingw',
     'mac',
@@ -155,14 +159,16 @@ iosfileinfolist = devfileinfolist + [
 androidfileinfolist = devfileinfolist + [
     {'src': 'build/android/*.sh',                                       'dst': None},
     {'src': 'build/android/*.properties',                               'dst': None},
-    {'src': 'build/android/obj/local/armeabi-v7a-hard/liborx*.a',       'dst': 'lib/static/android/armeabi-v7a-hard'},
+    {'src': 'build/android/obj/local/armeabi-v7a/liborx*.a',            'dst': 'lib/static/android/armeabi-v7a'},
+    {'src': 'build/android/obj/local/arm64-v8a/liborx*.a',              'dst': 'lib/static/android/arm64-v8a'},
     {'src': 'build/android/obj/local/x86/liborx*.a',                    'dst': 'lib/static/android/x86'}
 ]
 
 androidnativefileinfolist = devfileinfolist + [
     {'src': 'build/android-native/*.sh',                                'dst': None},
     {'src': 'build/android-native/*.properties',                        'dst': None},
-    {'src': 'build/android-native/obj/local/armeabi-v7a-hard/liborx*.a','dst': 'lib/static/android-native/armeabi-v7a-hard'},
+    {'src': 'build/android-native/obj/local/armeabi-v7a/liborx*.a',     'dst': 'lib/static/android-native/armeabi-v7a'},
+    {'src': 'build/android-native/obj/local/arm64-v8a/liborx*.a',       'dst': 'lib/static/android-native/arm64-v8a'},
     {'src': 'build/android-native/obj/local/x86/liborx*.a',             'dst': 'lib/static/android-native/x86'}
 ]
 
@@ -269,6 +275,7 @@ codefolderinfolist = [
     {'src': 'build/windows/vs2010',                                     'dst': None},
     {'src': 'build/windows/vs2012',                                     'dst': None},
     {'src': 'build/windows/vs2013',                                     'dst': None},
+    {'src': 'build/windows/vs2015',                                     'dst': None},
     {'src': 'build/windows/codeblocks',                                 'dst': None},
     {'src': 'build/windows/codelite',                                   'dst': None},
     {'src': 'build/windows/gmake',                                      'dst': None},
@@ -364,6 +371,38 @@ platforminfolist = {
     'tutovs2013-64': {
         'foldername':       'tutorial-vs2013-64',
         'filename':         'tutorial-vs2013-64',
+        'format':           'zip',
+        'fileinfolist':     tutorialvsfileinfolist,
+        'folderinfolist':   tutorialfolderinfolist
+    },
+
+    'vs2015-32': {
+        'foldername':       'dev-vs2015-32',
+        'filename':         'dev-vs2015-32',
+        'format':           'zip',
+        'fileinfolist':     vsfileinfolist,
+        'folderinfolist':   devfolderinfolist
+    },
+
+    'vs2015-64': {
+        'foldername':       'dev-vs2015-64',
+        'filename':         'dev-vs2015-64',
+        'format':           'zip',
+        'fileinfolist':     vsfileinfolist,
+        'folderinfolist':   devfolderinfolist
+    },
+
+    'tutovs2015-32': {
+        'foldername':       'tutorial-vs2015-32',
+        'filename':         'tutorial-vs2015-32',
+        'format':           'zip',
+        'fileinfolist':     tutorialvsfileinfolist,
+        'folderinfolist':   tutorialfolderinfolist
+    },
+
+    'tutovs2015-64': {
+        'foldername':       'tutorial-vs2015-64',
+        'filename':         'tutorial-vs2015-64',
         'format':           'zip',
         'fileinfolist':     tutorialvsfileinfolist,
         'folderinfolist':   tutorialfolderinfolist

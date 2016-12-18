@@ -40,7 +40,8 @@ end
 
 function initplatforms ()
     if os.is ("windows") then
-        if string.lower(_ACTION) == "vs2013" then
+        if string.lower(_ACTION) == "vs2013"
+        or string.lower(_ACTION) == "vs2015" then
             return
             {
                 "x64",
@@ -87,7 +88,7 @@ function defaultaction (name, action)
    end
 end
 
-defaultaction ("windows", "vs2013")
+defaultaction ("windows", "vs2015")
 defaultaction ("linux", "gmake")
 defaultaction ("macosx", "gmake")
 
@@ -133,14 +134,24 @@ solution "orxCrypt"
     includedirs
     {
         "../include",
-        "../../../code/include"
+        "../../../code/include",
+        "$(ORX)/include"
     }
 
     configuration {"not macosx"}
-        libdirs {"../lib", "../../../code/lib/static"}
+        libdirs
+        {
+            "../lib",
+            "../../../code/lib/static",
+            "$(ORX)/lib/static"
+        }
 
     configuration {"macosx"}
-        libdirs {"../../../code/lib/dynamic"}
+        libdirs
+        {
+            "../../../code/lib/dynamic",
+            "$(ORX)/lib/dynamic"
+        }
 
     configuration {}
 
@@ -157,7 +168,7 @@ solution "orxCrypt"
         "StaticRuntime"
     }
 
-    configuration {"not vs2013"}
+    configuration {"not vs2013", "not vs2015"}
         flags {"EnableSSE2"}
 
     configuration {"not x64"}

@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -1460,7 +1460,7 @@ orxANIMSET *orxFASTCALL orxAnimSet_CreateFromConfig(const orxSTRING _zConfigID)
     if((orxConfig_HasSection(_zConfigID) != orxFALSE)
     && (orxConfig_PushSection(_zConfigID) != orxSTATUS_FAILURE))
     {
-      orxU32  u32AnimCounter;
+      orxU32 u32AnimCounter;
 
       /* Gets animation counter */
       u32AnimCounter = orxConfig_GetListCounter(orxANIMSET_KZ_CONFIG_ANIM_LIST);
@@ -1479,9 +1479,6 @@ orxANIMSET *orxFASTCALL orxAnimSet_CreateFromConfig(const orxSTRING _zConfigID)
 
         /* Stores its reference key */
         pstResult->zReference = orxConfig_GetCurrentSection();
-
-        /* Protects it */
-        orxConfig_ProtectSection(pstResult->zReference, orxTRUE);
 
         /* For all animations */
         for(i = 0; i < u32AnimCounter; i++)
@@ -1596,6 +1593,18 @@ orxANIMSET *orxFASTCALL orxAnimSet_CreateFromConfig(const orxSTRING _zConfigID)
         /* Updates status flags */
         orxStructure_SetFlags(pstResult, orxANIMSET_KU32_FLAG_INTERNAL | orxANIMSET_KU32_FLAG_REFERENCED, orxANIMSET_KU32_FLAG_NONE);
       }
+      else
+      {
+        /* Was created? */
+        if(pstResult != orxNULL)
+        {
+          /* Deletes it */
+          orxAnimSet_Delete(pstResult);
+
+          /* Updates result */
+          pstResult = orxNULL;
+        }
+      }
 
       /* Pops previous section */
       orxConfig_PopSection();
@@ -1652,13 +1661,6 @@ orxSTATUS orxFASTCALL orxAnimSet_Delete(orxANIMSET *_pstAnimSet)
 
     /* Frees anim pointer array */
     orxMemory_Free(_pstAnimSet->pastAnim);
-
-    /* Has reference? */
-    if(_pstAnimSet->zReference != orxNULL)
-    {
-      /* Unprotects it */
-      orxConfig_ProtectSection(_pstAnimSet->zReference, orxFALSE);
-    }
 
     /* Deletes structure */
     orxStructure_Delete(_pstAnimSet);
@@ -2384,7 +2386,7 @@ orxANIM *orxFASTCALL orxAnimSet_GetAnim(const orxANIMSET *_pstAnimSet, orxU32 _u
   else
   {
     /* Logs message */
-    orxDEBUG_PRINT(orxDEBUG_LEVEL_ANIM, "Invalid index in animset.");
+    orxDEBUG_PRINT(orxDEBUG_LEVEL_ANIM, "AnimSet [%s]: index [%u] is invalid <max = %u>.", _pstAnimSet->zReference, _u32AnimID, orxAnimSet_GetAnimCounter(_pstAnimSet));
   }
 
   /* Done! */

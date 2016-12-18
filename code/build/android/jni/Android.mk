@@ -62,12 +62,12 @@ ORX_SRC_FILES := \
 ORX_INCLUDES := $(LOCAL_PATH)/../include \
                     $(LOCAL_PATH)/../../extern/dlmalloc \
                     $(LOCAL_PATH)/../../extern/stb_image \
-                    $(LOCAL_PATH)/../../extern/Box2D_2.1.3/include \
+                    $(LOCAL_PATH)/../../extern/LiquidFun-1.1.0/include \
                     $(LOCAL_PATH)/../../extern/openal-soft/include \
                     $(LOCAL_PATH)/../../extern/Tremolo \
                     $(LOCAL_PATH)/../../extern/libwebp/include
 
-ORX_CFLAGS := -DNO_MALLINFO=1 -D__orxANDROID__
+ORX_CFLAGS := -DNO_MALLINFO=1 -DTARGET_OS_ANDROID
 
 include $(CLEAR_VARS)
 
@@ -101,4 +101,3 @@ LOCAL_ARM_MODE := arm
 TARGET_PLATFORM = android-9
 
 include $(BUILD_STATIC_LIBRARY)
-

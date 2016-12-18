@@ -1,6 +1,6 @@
 /* Orx - Portable Game Engine
  *
- * Copyright (c) 2008-2015 Orx-Project
+ * Copyright (c) 2008-2016 Orx-Project
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -171,7 +171,34 @@
   #endif /* __orxMSVC__ */
 #endif /* __orcGCC__ || __orxLLVM__ */
 
-#define orxDEBUG_INIT()                       _orxDebug_Init()
+#define orxDEBUG_INIT()                                                                                           \
+do                                                                                                                \
+{                                                                                                                 \
+  orxU32 u32DebugFlags;                                                                                           \
+  _orxDebug_Init();                                                                                               \
+  u32DebugFlags = _orxDebug_GetFlags();                                                                           \
+  _orxDebug_SetFlags(orxDEBUG_KU32_STATIC_MASK_DEBUG, orxDEBUG_KU32_STATIC_MASK_USER_ALL);                        \
+  if(orxSystem_GetVersionNumeric() < __orxVERSION__)                                                              \
+  {                                                                                                               \
+    orxLOG("The version of the runtime library [" orxANSI_KZ_COLOR_FG_GREEN "%s"                                  \
+    orxANSI_KZ_COLOR_FG_DEFAULT "] is " orxANSI_KZ_COLOR_FG_RED orxANSI_KZ_COLOR_BLINK_ON "older"                 \
+    orxANSI_KZ_COLOR_FG_DEFAULT orxANSI_KZ_COLOR_BLINK_OFF " than the version used when compiling this program [" \
+    orxANSI_KZ_COLOR_FG_GREEN "%s" orxANSI_KZ_COLOR_FG_DEFAULT "]."                                               \
+    orxANSI_KZ_COLOR_FG_RED orxANSI_KZ_COLOR_BLINK_ON " Problems will likely ensue!",                             \
+    orxSystem_GetVersionString(), __orxVERSION_STRING__);                                                         \
+  }                                                                                                               \
+  else if(orxSystem_GetVersionNumeric() > __orxVERSION__)                                                         \
+  {                                                                                                               \
+    orxLOG("The version of the runtime library [" orxANSI_KZ_COLOR_FG_GREEN "%s"                                  \
+    orxANSI_KZ_COLOR_FG_DEFAULT "] is " orxANSI_KZ_COLOR_FG_YELLOW orxANSI_KZ_COLOR_BLINK_ON "more recent"        \
+    orxANSI_KZ_COLOR_FG_DEFAULT orxANSI_KZ_COLOR_BLINK_OFF " than the version used when compiling this program [" \
+    orxANSI_KZ_COLOR_FG_GREEN "%s" orxANSI_KZ_COLOR_FG_DEFAULT "]."                                               \
+    orxANSI_KZ_COLOR_FG_YELLOW orxANSI_KZ_COLOR_BLINK_ON " Problems may arise due to possible incompatibilities!",\
+    orxSystem_GetVersionString(), __orxVERSION_STRING__);                                                         \
+  }                                                                                                               \
+  _orxDebug_SetFlags(u32DebugFlags, orxDEBUG_KU32_STATIC_MASK_USER_ALL);                                          \
+}                                                                                                                 \
+while(orxFALSE)
 #define orxDEBUG_EXIT()                       _orxDebug_Exit()
 
 #ifdef __orxDEBUG__
@@ -230,19 +257,19 @@
 
   /* Assert */
   #if defined(__orxGCC__) || defined(__orxLLVM__)
-    #define orxASSERT(TEST, ...)                                                        \
-      if(!(TEST))                                                                       \
-      {                                                                                 \
-        orxDEBUG_PRINT(orxDEBUG_LEVEL_ASSERT, "[ASSERT] : <" #TEST ">", ##__VA_ARGS__); \
-        orxBREAK();                                                                     \
+    #define orxASSERT(TEST, ...)                                                                                                                                          \
+      if(!(TEST))                                                                                                                                                         \
+      {                                                                                                                                                                   \
+        orxDEBUG_PRINT(orxDEBUG_LEVEL_ASSERT, orxANSI_KZ_COLOR_BG_RED orxANSI_KZ_COLOR_FG_WHITE orxANSI_KZ_COLOR_BLINK_ON "FAILED ASSERTION [" #TEST "]", ##__VA_ARGS__); \
+        orxBREAK();                                                                                                                                                       \
       }
   #else /* __orxGCC__ || __orxLLVM__ */
     #ifdef __orxMSVC__
-      #define orxASSERT(TEST, ...)                                                      \
-        if(!(TEST))                                                                     \
-        {                                                                               \
-          orxDEBUG_PRINT(orxDEBUG_LEVEL_ASSERT, "[ASSERT] : <" #TEST ">", __VA_ARGS__); \
-          orxBREAK();                                                                   \
+      #define orxASSERT(TEST, ...)                                                                                                                                        \
+        if(!(TEST))                                                                                                                                                       \
+        {                                                                                                                                                                 \
+          orxDEBUG_PRINT(orxDEBUG_LEVEL_ASSERT, orxANSI_KZ_COLOR_BG_RED orxANSI_KZ_COLOR_FG_WHITE orxANSI_KZ_COLOR_BLINK_ON "FAILED ASSERTION [" #TEST "]", __VA_ARGS__); \
+          orxBREAK();                                                                                                                                                     \
         }
     #endif /* __orxMSVC__ */
   #endif /* __orcGCC__ || __orxLLVM__ */
@@ -283,8 +310,14 @@
 
 #define orxDEBUG_KS32_BUFFER_OUTPUT_SIZE      2048
 
-#define orxDEBUG_KZ_DATE_FORMAT               "[%H:%M:%S]"
-#define orxDEBUG_KZ_DATE_FULL_FORMAT          "[%Y-%m-%d %H:%M:%S]"
+#define orxDEBUG_KZ_DATE_FORMAT               orxANSI_KZ_COLOR_FG_CYAN "[%H:%M:%S]" orxANSI_KZ_COLOR_RESET
+#define orxDEBUG_KZ_DATE_FULL_FORMAT          orxANSI_KZ_COLOR_FG_CYAN "[%Y-%m-%d %H:%M:%S]"  orxANSI_KZ_COLOR_RESET
+
+#define orxDEBUG_KZ_TYPE_LOG_FORMAT           orxANSI_KZ_COLOR_FG_GREEN "[%s]" orxANSI_KZ_COLOR_RESET
+#define orxDEBUG_KZ_TYPE_WARNING_FORMAT       orxANSI_KZ_COLOR_FG_YELLOW "[%s]" orxANSI_KZ_COLOR_RESET
+#define orxDEBUG_KZ_TYPE_ERROR_FORMAT         orxANSI_KZ_COLOR_FG_RED "[%s]" orxANSI_KZ_COLOR_RESET
+
+#define orxDEBUG_KZ_FILE_FORMAT               orxANSI_KZ_COLOR_FG_MAGENTA "[%s:%s(%u)]" orxANSI_KZ_COLOR_RESET
 
 
 /*****************************************************************************/
@@ -313,11 +346,11 @@ typedef enum __orxDEBUG_LEVEL_t
   orxDEBUG_LEVEL_SYSTEM,                      /**< System Debug */
   orxDEBUG_LEVEL_TIMER,                       /**< Timer Debug */
 
-  orxDEBUG_LEVEL_USER,                        /**< User Debug */
-
   orxDEBUG_LEVEL_LOG,                         /**< Log Debug */
 
   orxDEBUG_LEVEL_ASSERT,                      /**< Assert Debug */
+
+  orxDEBUG_LEVEL_USER,                        /**< User Debug */
 
   orxDEBUG_LEVEL_NUMBER,
 
